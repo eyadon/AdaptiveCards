@@ -7,6 +7,7 @@
 #import "ACOAdaptiveCardParseResult.h"
 #import "ACOAdaptiveCardPrivate.h"
 #import "ACOAuthenticationPrivate.h"
+#import "ACOBundle.h"
 #import "ACORefreshPrivate.h"
 #import "ACORemoteResourceInformationPrivate.h"
 #import "ACRErrors.h"
@@ -57,12 +58,13 @@ using namespace AdaptiveCards;
 
 + (ACOAdaptiveCardParseResult *)fromJson:(NSString *)payload;
 {
+    const std::string g_version = "1.6";
     ACOAdaptiveCardParseResult *result = nil;
     if (payload) {
         try {
             ACOAdaptiveCard *card = [[ACOAdaptiveCard alloc] init];
-            std::shared_ptr<ParseResult> parseResult = AdaptiveCard::DeserializeFromString(std::string([payload UTF8String]), std::string("1.5"));
-            NSMutableArray *acrParseWarnings;
+            std::shared_ptr<ParseResult> parseResult = AdaptiveCard::DeserializeFromString(std::string([payload UTF8String]), g_version);
+            NSMutableArray *acrParseWarnings = [[NSMutableArray alloc] init];
             std::vector<std::shared_ptr<AdaptiveCardParseWarning>> parseWarnings = parseResult->GetWarnings();
             for (const auto &warning : parseWarnings) {
                 ACRParseWarning *acrParseWarning = [[ACRParseWarning alloc] initWithParseWarning:warning];
@@ -78,11 +80,15 @@ using namespace AdaptiveCards;
             // converts AdaptiveCardParseException to NSError
             ErrorStatusCode errorStatusCode = e.GetStatusCode();
             NSInteger errorCode = (long)errorStatusCode;
-
+            NSBundle *adaptiveCardsBundle = [[ACOBundle getInstance] getBundle];
+            NSString *localizedFormat = NSLocalizedStringFromTableInBundle(@"AdaptiveCards.Parsing", nil, adaptiveCardsBundle, "Parsing Error Messages");
+            NSString *objectModelErrorCodeInString = [NSString stringWithCString:ErrorStatusCodeToString(errorStatusCode).c_str() encoding:NSUTF8StringEncoding];
+            NSDictionary<NSErrorUserInfoKey, id> *userInfo = @{NSLocalizedDescriptionKey : [NSString localizedStringWithFormat:localizedFormat, objectModelErrorCodeInString]};
             NSError *parseError = [NSError errorWithDomain:ACRParseErrorDomain
                                                       code:errorCode
-                                                  userInfo:nil];
+                                                  userInfo:userInfo];
             NSArray<NSError *> *errors = @[ parseError ];
+
             result = [[ACOAdaptiveCardParseResult alloc] init:nil errors:errors warnings:nil];
         }
     }

@@ -27,20 +27,42 @@
 @property NSNumber *key;
 @property NSNumber *iconPlacement;
 @property BOOL hasSelectAction;
+@property BOOL subtreeHasSelectAction;
 @property BOOL isFirstRowAsHeaders;
+@property ContainerStyle style;
 @end
 
 @implementation ACOContextProperties
 @end
 
+@interface ACOSelectActionProperties : NSObject
+@property BOOL hasSelectAction;
+@property BOOL subtreeHasSelectAction;
+@end
+
+@implementation ACOSelectActionProperties
+
+- (instancetype)init:(BOOL)hasSelectAction
+{
+    self = [super init];
+    if (self) {
+        _hasSelectAction = hasSelectAction;
+    }
+    return self;
+}
+
+@end
+
 @implementation ACORenderContext {
     NSMutableDictionary<NSNumber *, NSMutableArray *> *_internalIdContext;
     NSMutableArray<NSNumber *> *_rtlContext;
-    NSMutableArray<NSNumber *> *_selectActionContext;
+    NSMutableArray<ACOSelectActionProperties *> *_selectActionContext;
     NSMutableArray<NSNumber *> *_actionIconPlacementContext;
     NSMutableArray<NSNumber *> *_firstRowsAsheadersContext;
     NSMutableArray<NSNumber *> *_verticalAlignmentContext;
     NSMutableArray<NSNumber *> *_horizontalAlignmentContext;
+    NSMutableArray<NSNumber *> *_styleContext;
+    NSMapTable<NSNumber *, NSObject<ACOIVisibilityManagerFacade> *> *_visibilityMap;
 }
 
 - (instancetype)init
@@ -55,6 +77,8 @@
         _firstRowsAsheadersContext = [[NSMutableArray alloc] init];
         _verticalAlignmentContext = [[NSMutableArray alloc] init];
         _horizontalAlignmentContext = [[NSMutableArray alloc] init];
+        _styleContext = [[NSMutableArray alloc] init];
+        _visibilityMap = [NSMapTable mapTableWithKeyOptions:NSMapTableStrongMemory valueOptions:NSMapTableWeakMemory];
     }
 
     return self;
@@ -81,8 +105,15 @@
 - (BOOL)hasSelectAction
 {
     if (_selectActionContext && [_selectActionContext count]) {
-        NSNumber *number = [_selectActionContext lastObject];
-        return [number boolValue];
+        return [_selectActionContext lastObject].hasSelectAction;
+    }
+    return NO;
+}
+
+- (BOOL)subtreeHasSelectAction
+{
+    if (_selectActionContext && [_selectActionContext count]) {
+        return [_selectActionContext lastObject].subtreeHasSelectAction;
     }
     return NO;
 }
@@ -109,15 +140,15 @@
     return NO;
 }
 
-- (ACRVerticalAlignment)verticalContentAlignment
+- (ACRVerticalContentAlignment)verticalContentAlignment
 {
     if (_verticalAlignmentContext && [_verticalAlignmentContext count]) {
         NSNumber *number = [_verticalAlignmentContext lastObject];
         if (number) {
-            return (ACRVerticalAlignment)[number intValue];
+            return (ACRVerticalContentAlignment)[number intValue];
         }
     }
-    return ACRVerticalTop;
+    return ACRVerticalContentAlignmentTop;
 }
 
 - (ACRHorizontalAlignment)horizontalContentAlignment
@@ -129,6 +160,17 @@
         }
     }
     return ACRLeft;
+}
+
+- (ACRContainerStyle)style
+{
+    if (_styleContext && [_styleContext count]) {
+        NSNumber *number = [_styleContext lastObject];
+        if (number) {
+            return (ACRContainerStyle)[number intValue];
+        }
+    }
+    return ACRNone;
 }
 
 - (void)pushBaseActionElementContext:(ACOBaseActionElement *)element
@@ -155,7 +197,8 @@
 
     if (properties.hasSelectAction) {
         shouldPush = YES;
-        [_selectActionContext addObject:[NSNumber numberWithBool:properties.hasSelectAction]];
+        ACOSelectActionProperties *selectActionProperties = [[ACOSelectActionProperties alloc] init:properties.hasSelectAction];
+        [_selectActionContext addObject:selectActionProperties];
         [contexts addObject:_selectActionContext];
     }
 
@@ -183,6 +226,12 @@
         [contexts addObject:_verticalAlignmentContext];
     }
 
+    if (properties.style != ContainerStyle::None) {
+        shouldPush = YES;
+        [_styleContext addObject:[NSNumber numberWithInt:(int)(properties.style)]];
+        [contexts addObject:_styleContext];
+    }
+
     if (shouldPush) {
         _internalIdContext[key] = contexts;
     }
@@ -208,6 +257,7 @@
         if (table) {
             properties.horizontalAlignment = table->GetHorizontalCellContentAlignment();
             properties.verticalAlignment = table->GetVerticalCellContentAlignment();
+            properties.style = table->GetGridStyle();
         }
     }
 
@@ -226,14 +276,20 @@
         if (row) {
             properties.horizontalAlignment = row->GetHorizontalCellContentAlignment();
             properties.verticalAlignment = row->GetVerticalCellContentAlignment();
+            properties.style = row->GetStyle();
         }
     }
 
     if (acoElement.type == ACRTableCell) {
         const std::shared_ptr<TableCell> &cell = std::dynamic_pointer_cast<TableCell>(element);
         properties.crtl = cell->GetRtl();
-        if (cell->GetSelectAction()) {
-            properties.hasSelectAction = YES;
+        if (cell) {
+            if (cell->GetSelectAction()) {
+                properties.hasSelectAction = YES;
+            }
+
+            properties.verticalAlignment = cell->GetVerticalContentAlignment();
+            properties.style = cell->GetStyle();
         }
     }
 
@@ -275,6 +331,11 @@
     if (contexts) {
         for (NSMutableArray *context in contexts) {
             [context removeLastObject];
+            // when popping a selectAction, update the parent context's subtree attribute
+            // to reflect the existance of child select action
+            if (context == _selectActionContext && context.count > 1) {
+                ((ACOSelectActionProperties *)context.lastObject).subtreeHasSelectAction = YES;
+            }
         }
         [_internalIdContext removeObjectForKey:key];
     }
@@ -315,6 +376,18 @@
     std::shared_ptr<AdaptiveCard> adaptiveCard = [card card];
     NSNumber *key = [NSNumber numberWithLong:(adaptiveCard->GetInternalId()).Hash()];
     [self removeContext:key];
+}
+
+- (void)registerVisibilityManager:(NSObject<ACOIVisibilityManagerFacade> *)manager targetViewTag:(NSUInteger)viewTag
+{
+    if (manager) {
+        [_visibilityMap setObject:manager forKey:[NSNumber numberWithLong:viewTag]];
+    }
+}
+
+- (NSObject<ACOIVisibilityManagerFacade> *)retrieveVisiblityManagerWithTag:(NSUInteger)viewTag
+{
+    return [_visibilityMap objectForKey:[NSNumber numberWithLong:viewTag]];
 }
 
 @end

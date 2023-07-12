@@ -2,6 +2,9 @@
 // Licensed under the MIT License.
 package io.adaptivecards.renderer.readonly;
 
+import static android.content.Context.ACCESSIBILITY_SERVICE;
+
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -10,10 +13,13 @@ import android.text.Selection;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
-import android.text.style.ClickableSpan;
+import android.text.method.LinkMovementMethod;
+import android.text.style.URLSpan;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -25,6 +31,7 @@ import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.fragment.app.FragmentManager;
 
 import java.util.HashMap;
+import java.util.List;
 
 import io.adaptivecards.objectmodel.BaseCardElement;
 import io.adaptivecards.objectmodel.ContainerStyle;
@@ -126,6 +133,29 @@ public class TextBlockRenderer extends BaseCardElementRenderer
         textView.setTextColor(getColor(TextRendererUtil.getTextColor(foregroundColor, hostConfig, isSubtle, containerStyle)));
     }
 
+    static class SingleLinkOnKeyListener implements View.OnKeyListener
+    {
+        Spannable spannable;
+        URLSpan urlSpan;
+
+        public SingleLinkOnKeyListener(Spannable spannable)
+        {
+            this.spannable = spannable;
+            URLSpan[] spans = spannable.getSpans(0, 1, URLSpan.class);
+            urlSpan = spans[0];
+        }
+
+        @Override
+        public boolean onKey(View view, int i, KeyEvent keyEvent)
+        {
+            if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)
+            {
+                urlSpan.onClick(view);
+            }
+            return false;
+        }
+    }
+
     static class TouchTextView implements View.OnTouchListener
     {
         Spannable spannable;
@@ -133,6 +163,7 @@ public class TextBlockRenderer extends BaseCardElementRenderer
         public TouchTextView (Spannable spannable)
         {
             this.spannable = spannable;
+
         }
 
         @Override
@@ -160,7 +191,7 @@ public class TextBlockRenderer extends BaseCardElementRenderer
                 int line = layout.getLineForVertical(y);
                 int off = layout.getOffsetForHorizontal(line, x);
 
-                ClickableSpan[] link = spannable.getSpans(off, off, ClickableSpan.class);
+                URLSpan[] link = spannable.getSpans(off, off, URLSpan.class);
 
                 if (link.length != 0)
                 {
@@ -186,6 +217,42 @@ public class TextBlockRenderer extends BaseCardElementRenderer
 
             return false;
         }
+    }
+
+    private void applyAccessibilityProperties(TextView textView, Context context, RendererUtil.SpecialTextHandleResult textHandleResult)
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+        {
+            textView.setScreenReaderFocusable(true);
+        }
+        textView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+
+        if (textHandleResult.getHasLinks())
+        {
+            textView.setMovementMethod(LinkMovementMethod.getInstance());
+            if (textHandleResult.isALink())
+            {
+                textView.setOnKeyListener(new SingleLinkOnKeyListener(new SpannableString(textHandleResult.getHtmlString())));
+            }
+        }
+
+        AccessibilityManager am = (AccessibilityManager)context.getSystemService(ACCESSIBILITY_SERVICE);
+        am.addAccessibilityStateChangeListener(new AccessibilityManager.AccessibilityStateChangeListener() {
+            @Override
+            public void onAccessibilityStateChanged(boolean b)
+            {
+                boolean isTalkBackEnabled = isTalkBackEnabled(am);
+                if (b && isTalkBackEnabled)
+                {
+                    textView.setFocusable(true);
+                }
+                else
+                {
+                    textView.setFocusable(false);
+                }
+            }
+        });
+        textView.setFocusable(isTalkBackEnabled(am));
     }
 
     @Override
@@ -214,21 +281,20 @@ public class TextBlockRenderer extends BaseCardElementRenderer
         DateTimeParser parser = new DateTimeParser(textBlock.GetLanguage());
         String textWithFormattedDates = parser.GenerateString(textBlock.GetTextForDateParsing());
 
-        CharSequence text = RendererUtil.handleSpecialText(textWithFormattedDates);
-        textView.setText(text);
+        RendererUtil.SpecialTextHandleResult textHandleResult = RendererUtil.handleSpecialTextAndQueryLinks(textWithFormattedDates);
+        CharSequence htmlString = textHandleResult.getHtmlString();
+        textView.setText(htmlString);
 
-        if (!textBlock.GetWrap())
-        {
-            textView.setMaxLines(1);
-        }
         textView.setEllipsize(TextUtils.TruncateAt.END);
-        textView.setOnTouchListener(new TouchTextView(new SpannableString(text)));
+        textView.setOnTouchListener(new TouchTextView(new SpannableString(htmlString)));
+
         textView.setHorizontallyScrolling(false);
         applyTextFormat(textView, hostConfig, textBlock.GetStyle(), textBlock.GetFontType(), textBlock.GetTextWeight(), renderArgs);
         applyTextSize(textView, hostConfig, textBlock.GetStyle(), textBlock.GetFontType(), textBlock.GetTextSize(), renderArgs);
         applyTextColor(textView, hostConfig, textBlock.GetStyle(), textBlock.GetTextColor(), textBlock.GetIsSubtle(), renderArgs.getContainerStyle(), renderArgs);
         applyHorizontalAlignment(textView, textBlock.GetHorizontalAlignment(), renderArgs);
         applyAccessibilityHeading(textView, textBlock.GetStyle());
+        applyAccessibilityProperties(textView, context, textHandleResult);
 
         int maxLines = (int)textBlock.GetMaxLines();
         if (maxLines > 0 && textBlock.GetWrap())
@@ -252,4 +318,18 @@ public class TextBlockRenderer extends BaseCardElementRenderer
     private final int g_textWeightDefault = Typeface.NORMAL;
     private final int g_textWeightBolder = Typeface.BOLD;
     private final int g_textWeightLighter = Typeface.ITALIC;
+
+    private boolean isTalkBackEnabled(AccessibilityManager am)
+    {
+        if (am.isEnabled())
+        {
+            List<AccessibilityServiceInfo> talkBackInfo = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_SPOKEN);
+            if (talkBackInfo.isEmpty())
+            {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
 }

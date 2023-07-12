@@ -37,7 +37,7 @@ namespace AdaptiveCardsSharedModelUnitTest
     TEST_CLASS(EnumTests)
     {
     public:
-        ENUM_TEST(ActionAlignment, ActionAlignment::Center, "Center"s);  
+        ENUM_TEST(ActionAlignment, ActionAlignment::Center, "Center"s);
         ENUM_TEST(ActionMode, ActionMode::Popup, "Popup"s);
         ENUM_TEST(ActionsOrientation, ActionsOrientation::Vertical, "Vertical"s);
         ENUM_TEST(ActionType, ActionType::OpenUrl, "Action.OpenUrl"s);
@@ -54,7 +54,7 @@ namespace AdaptiveCardsSharedModelUnitTest
         ENUM_TEST_WITH_REVERSE_MAP(ImageStyle, ImageStyle::Person, "person"s, );
         ENUM_TEST(SeparatorThickness, SeparatorThickness::Thick, "thick"s);
         ENUM_TEST(Spacing, Spacing::None, "none"s);
-        ENUM_TEST(TextInputStyle, TextInputStyle::Tel, "Tel"s);
+        ENUM_TEST(TextInputStyle, TextInputStyle::Password, "Password"s);
         ENUM_TEST_WITH_REVERSE_MAP(TextSize, TextSize::Large, "Large"s, {{"Normal", TextSize::Default}});
         ENUM_TEST_WITH_REVERSE_MAP(TextWeight, TextWeight::Bolder, "Bolder"s, {{"Normal", TextWeight::Default}});
         ENUM_TEST(VerticalContentAlignment, VerticalContentAlignment::Center, "Center"s);

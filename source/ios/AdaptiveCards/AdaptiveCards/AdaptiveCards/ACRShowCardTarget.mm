@@ -104,6 +104,7 @@
 
     [superview addArrangedSubview:adcView];
     _superview = superview;
+    superview.accessibilityElements = [((ACRContentStackView *)superview) getArrangedSubviews];
 }
 
 - (IBAction)toggleVisibilityOfShowCard
@@ -118,10 +119,15 @@
     // AdatpiveCard will configure the backgroun
     if (hidden) {
         if ([_adcView.subviews count] > 1) {
-            renderBackgroundCoverMode(_adcView.subviews[1], _adcView);
+            NSMutableArray<NSLayoutConstraint *> *constraints = [[NSMutableArray alloc] init];
+            renderBackgroundCoverMode(_adcView.subviews[1], _adcView.backgroundView, constraints, _adcView);
+            [NSLayoutConstraint activateConstraints:constraints];
         }
     }
     _button.selected = !isSelected;
+
+    NSString *hint = hidden ? @"card expanded" : @"card collapsed";
+    _button.accessibilityValue = NSLocalizedString(hint, nil);
 
     if ([_rootView.acrActionDelegate respondsToSelector:@selector(didChangeVisibility:isVisible:)]) {
         [_rootView.acrActionDelegate didChangeVisibility:_button isVisible:(!_adcView.hidden)];

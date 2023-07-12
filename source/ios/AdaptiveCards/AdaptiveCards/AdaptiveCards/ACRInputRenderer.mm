@@ -65,6 +65,11 @@
             txtInput = [bundle loadNibNamed:@"ACRTextUrlField" owner:rootView options:nil][0];
             break;
         }
+        case TextInputStyle::Password: {
+            txtInput = [bundle loadNibNamed:@"ACRTextField" owner:rootView options:nil][0];
+            txtInput.secureTextEntry = YES;
+            break;
+        }
         case TextInputStyle::Text:
         default: {
             txtInput = [bundle loadNibNamed:@"ACRTextField" owner:rootView options:nil][0];
@@ -74,6 +79,7 @@
     txtInput.placeholder = [NSString stringWithCString:inputBlock->GetPlaceholder().c_str()
                                               encoding:NSUTF8StringEncoding];
     txtInput.text = [NSString stringWithCString:inputBlock->GetValue().c_str() encoding:NSUTF8StringEncoding];
+
     txtInput.allowsEditingTextAttributes = YES;
     return txtInput;
 }
@@ -107,7 +113,9 @@
     }
 
     ACRTextInputHandler *textInputHandler = [[ACRTextInputHandler alloc] init:acoElem];
-    if (inputBlck->GetIsMultiline()) {
+
+    BOOL isMultiline = (inputBlck->GetTextInputStyle() != TextInputStyle::Password) && inputBlck->GetIsMultiline();
+    if (isMultiline) {
         if (renderAction) {
             // if action is defined, load ACRQuickReplyMultilineView nib for customizable UI
             multilineview = [[ACRQuickReplyMultilineView alloc] initWithFrame:CGRectMake(0, 0, viewGroup.frame.size.width, 0)];
@@ -131,6 +139,8 @@
             configRtl(multilineview.contentView, rootView.context);
             configRtl(txtview, rootView.context);
             configRtl(button, rootView.context);
+            ACRInputLabelView *inputLabelView = [[ACRInputLabelView alloc] initInputLabelView:rootView acoConfig:acoConfig adaptiveInputElement:inputBlck inputView:inputview accessibilityItem:txtview viewGroup:viewGroup dataSource:nil];
+            inputview = inputLabelView;
         } else {
             txtview = [[ACRTextView alloc] initWithFrame:CGRectMake(0, 0, viewGroup.frame.size.width, 0) element:acoElem];
             txtview.allowsEditingTextAttributes = YES;
@@ -139,10 +149,8 @@
             txtview.scrollEnabled = NO;
             txtview.keyboardType = UIKeyboardTypeDefault;
             [txtview.layer setCornerRadius:5.0f];
-            inputview = txtview;
+            inputview = [[ACRInputLabelView alloc] initInputLabelView:rootView acoConfig:acoConfig adaptiveInputElement:inputBlck inputView:txtview accessibilityItem:txtview viewGroup:viewGroup dataSource:nil];
         }
-        ACRInputLabelView *inputLabelView = [[ACRInputLabelView alloc] initInputLabelView:rootView acoConfig:acoConfig adptiveInputElement:inputBlck inputView:inputview accessibilityItem:inputview viewGroup:viewGroup dataSource:nil];
-        inputview = inputLabelView;
     } else {
         if (renderAction) {
             // if action is defined, load ACRQuickReplyView nib for customizable UI
@@ -150,40 +158,24 @@
             button = quickReplyView.button;
             txtInput = [ACRInputRenderer configTextFiled:inputBlck renderAction:renderAction rootView:rootView viewGroup:viewGroup];
             [quickReplyView addTextField:txtInput];
-            ACRInputLabelView *inputLabelView = [[ACRInputLabelView alloc] initInputLabelView:rootView acoConfig:acoConfig adptiveInputElement:inputBlck inputView:quickReplyView accessibilityItem:quickReplyView viewGroup:viewGroup dataSource:textInputHandler];
-            inputview = inputLabelView;
+            inputview = [[ACRInputLabelView alloc] initInputLabelView:rootView acoConfig:acoConfig adaptiveInputElement:inputBlck inputView:quickReplyView accessibilityItem:txtInput viewGroup:viewGroup dataSource:textInputHandler];
             configRtl(quickReplyView.stack, rootView.context);
             configRtl(txtInput, rootView.context);
             configRtl(button, rootView.context);
         } else {
             txtInput = [ACRInputRenderer configTextFiled:inputBlck renderAction:renderAction rootView:rootView viewGroup:viewGroup];
-            ACRInputLabelView *inputLabelView = [[ACRInputLabelView alloc] initInputLabelView:rootView acoConfig:acoConfig adptiveInputElement:inputBlck inputView:txtInput accessibilityItem:txtInput viewGroup:viewGroup dataSource:textInputHandler];
-            inputview = inputLabelView;
+            inputview = [[ACRInputLabelView alloc] initInputLabelView:rootView acoConfig:acoConfig adaptiveInputElement:inputBlck inputView:txtInput accessibilityItem:txtInput viewGroup:viewGroup dataSource:textInputHandler];
         }
         txtInput.delegate = textInputHandler;
-
-        [inputview setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
     }
 
-    if (elem->GetHeight() == HeightType::Stretch && !inputBlck->GetIsMultiline()) {
-        ACRColumnView *textInputContainer = [[ACRColumnView alloc] init];
-        [textInputContainer addArrangedSubview:inputview];
-
-        // Add a blank view so the input field doesnt grow as large as it can and so it keeps the same behavior as Android and UWP
-        UIView *blankTrailingSpace = [[UIView alloc] init];
-        [textInputContainer addArrangedSubview:blankTrailingSpace];
-        [textInputContainer adjustHuggingForLastElement];
-
-        [viewGroup addArrangedSubview:textInputContainer];
-    } else {
-        [viewGroup addArrangedSubview:inputview];
-    }
+    [viewGroup addArrangedSubview:inputview];
 
     inputview.translatesAutoresizingMaskIntoConstraints = false;
 
     // configures for action
     if (renderAction) {
-        if (inputBlck->GetIsMultiline()) {
+        if (isMultiline) {
             [inputs addObject:txtview];
         } else {
             [inputs addObject:inputview];
@@ -227,6 +219,9 @@
         }
 
         ACOBaseActionElement *acoSelectAction = [ACOBaseActionElement getACOActionElementFromAdaptiveElement:action];
+        if (!acoSelectAction.tooltip && acoSelectAction.title && key.length) {
+            acoSelectAction.tooltip = acoSelectAction.title;
+        }
 
         NSObject *target;
         if (ACRRenderingStatus::ACROk == buildTargetForButton([rootView getQuickReplyTargetBuilderDirector], acoSelectAction, button, &target)) {
@@ -242,8 +237,6 @@
     } else {
         [inputs addObject:inputview];
     }
-
-    configVisibility(inputview, elem);
 
     return inputview;
 }

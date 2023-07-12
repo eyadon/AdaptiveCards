@@ -78,6 +78,9 @@
             content = [[NSMutableAttributedString alloc] initWithData:htmlData options:options documentAttributes:nil error:nil];
             // Drop newline char
             [content deleteCharactersInRange:NSMakeRange([content length] - 1, 1)];
+
+            UpdateFontWithDynamicType(content);
+
             lab.selectable = YES;
             lab.dataDetectorTypes = UIDataDetectorTypeLink | UIDataDetectorTypePhoneNumber;
             lab.userInteractionEnabled = YES;
@@ -112,6 +115,7 @@
 
         lab.textContainer.lineBreakMode = NSLineBreakByTruncatingTail;
         lab.attributedText = content;
+        lab.accessibilityLabel = content.string;
         if ([content.string stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet].length == 0) {
             lab.accessibilityElementsHidden = YES;
         }
@@ -130,6 +134,8 @@
         lab.accessibilityTraits |= UIAccessibilityTraitHeader;
     }
 
+    lab.editable = NO;
+
     [lab setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
 
     if (txtBlck->GetHeight() == HeightType::Auto) {
@@ -139,8 +145,6 @@
     }
 
     configRtl(lab, rootView.context);
-
-    configVisibility(lab, elem);
 
     return lab;
 }

@@ -9,6 +9,7 @@
 #import "ACOHostConfigPrivate.h"
 #import "ACRIContentHoldingView.h"
 #import "ACRInputLabelViewPrivate.h"
+#import "ACRQuickReplyView.h"
 #import "UtiliOS.h"
 
 @implementation ACRInputLabelView
@@ -38,7 +39,7 @@
     [self.layoutMarginsGuide.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor].active = YES;
 }
 
-- (instancetype)initInputLabelView:(ACRView *)rootView acoConfig:(ACOHostConfig *)acoConfig adptiveInputElement:(const std::shared_ptr<BaseInputElement> &)inputBlck inputView:(UIView *)inputView accessibilityItem:(UIView *)accessibilityItem viewGroup:(UIView<ACRIContentHoldingView> *)viewGroup dataSource:(NSObject<ACRIBaseInputHandler> *)dataSource
+- (instancetype)initInputLabelView:(ACRView *)rootView acoConfig:(ACOHostConfig *)acoConfig adaptiveInputElement:(const std::shared_ptr<BaseInputElement> &)inputBlck inputView:(UIView *)inputView accessibilityItem:(UIView *)accessibilityItem viewGroup:(UIView<ACRIContentHoldingView> *)viewGroup dataSource:(NSObject<ACRIBaseInputHandler> *)dataSource
 {
     self = [self initWithFrame:CGRectMake(0, 0, viewGroup.frame.size.width, 0)];
     if (self) {
@@ -111,14 +112,18 @@
         self.isAccessibilityElement = NO;
         inputView.accessibilityLabel = self.label.text;
         self.inputAccessibilityItem = inputView;
-
+        self.inputAccessibilityItem.accessibilityIdentifier = [NSString stringWithUTF8String:inputBlck->GetId().c_str()];
         if (inputView != accessibilityItem) {
             self.inputAccessibilityItem = accessibilityItem;
             self.inputAccessibilityItem.accessibilityLabel = inputView.accessibilityLabel;
         }
 
         self.inputAccessibilityItem.isAccessibilityElement = YES;
-        self.labelText = self.inputAccessibilityItem.accessibilityLabel;
+        self.labelText = self.label.text;
+
+        if (HeightType::Stretch == inputBlck->GetHeight() && [inputView isKindOfClass:[ACRQuickReplyView class]]) {
+            [self.stack addArrangedSubview:[(ACRColumnView *)viewGroup addPaddingFor:self]];
+        }
 
         self.shouldGroupAccessibilityChildren = NO;
 
@@ -176,6 +181,7 @@
                 self.errorMessage.hidden = NO;
                 self.errorMessage.isAccessibilityElement = NO;
                 self.inputAccessibilityItem.accessibilityLabel = [NSString stringWithFormat:@"%@, %@,", self.labelText, self.errorMessage.text];
+                self.inputAccessibilityItem.accessibilityIdentifier = self.id;
             }
         } else {
             if (self.hasErrorMessage) {

@@ -11,6 +11,7 @@ namespace AdaptiveCards
             {AdaptiveCardSchemaKey::Action, "action"},
             {AdaptiveCardSchemaKey::ActionAlignment, "actionAlignment"},
             {AdaptiveCardSchemaKey::ActionMode, "actionMode"},
+            {AdaptiveCardSchemaKey::ActionRole, "role"},
             {AdaptiveCardSchemaKey::ActionSet, "ActionSet"},
             {AdaptiveCardSchemaKey::ActionSetConfig, "actionSetConfig"},
             {AdaptiveCardSchemaKey::Actions, "actions"},
@@ -35,12 +36,15 @@ namespace AdaptiveCards
             {AdaptiveCardSchemaKey::Bottom, "bottom"},
             {AdaptiveCardSchemaKey::ButtonSpacing, "buttonSpacing"},
             {AdaptiveCardSchemaKey::Buttons, "buttons"},
+            {AdaptiveCardSchemaKey::CaptionSources, "captionSources"},
             {AdaptiveCardSchemaKey::Card, "card"},
             {AdaptiveCardSchemaKey::CellSpacing, "cellSpacing"},
             {AdaptiveCardSchemaKey::Cells, "cells"},
             {AdaptiveCardSchemaKey::Center, "center"},
             {AdaptiveCardSchemaKey::ChoiceSet, "choiceSet"},
             {AdaptiveCardSchemaKey::Choices, "choices"},
+            {AdaptiveCardSchemaKey::ChoicesData, "choices.data"},
+            {AdaptiveCardSchemaKey::ChoicesDataType, "type"},
             {AdaptiveCardSchemaKey::Color, "color"},
             {AdaptiveCardSchemaKey::ColorConfig, "colorConfig"},
             {AdaptiveCardSchemaKey::Column, "column"},
@@ -52,6 +56,8 @@ namespace AdaptiveCards
             {AdaptiveCardSchemaKey::ContainerStyles, "containerStyles"},
             {AdaptiveCardSchemaKey::Dark, "dark"},
             {AdaptiveCardSchemaKey::Data, "data"},
+            {AdaptiveCardSchemaKey::DataQuery, "Data.Query"},
+            {AdaptiveCardSchemaKey::Dataset, "dataset"},
             {AdaptiveCardSchemaKey::DateInput, "dateInput"},
             {AdaptiveCardSchemaKey::Default, "default"},
             {AdaptiveCardSchemaKey::DefaultPoster, "defaultPoster"},
@@ -122,6 +128,7 @@ namespace AdaptiveCards
             {AdaptiveCardSchemaKey::MaxWidth, "maxWidth"},
             {AdaptiveCardSchemaKey::Media, "media"},
             {AdaptiveCardSchemaKey::Medium, "medium"},
+            {AdaptiveCardSchemaKey::MetaData, "metaData"},
             {AdaptiveCardSchemaKey::Method, "method"},
             {AdaptiveCardSchemaKey::MimeType, "mimeType"},
             {AdaptiveCardSchemaKey::Min, "min"},
@@ -196,6 +203,7 @@ namespace AdaptiveCards
             {AdaptiveCardSchemaKey::VerticalCellContentAlignment, "verticalCellContentAlignment"},
             {AdaptiveCardSchemaKey::VerticalContentAlignment, "verticalContentAlignment"},
             {AdaptiveCardSchemaKey::Warning, "warning"},
+            {AdaptiveCardSchemaKey::WebUrl, "webUrl"},
             {AdaptiveCardSchemaKey::Weight, "weight"},
             {AdaptiveCardSchemaKey::Width, "width"},
             {AdaptiveCardSchemaKey::Wrap, "wrap"}});
@@ -332,6 +340,13 @@ namespace AdaptiveCards
             {ActionMode::Inline, "Inline"},
             {ActionMode::Popup, "Popup"}});
 
+    DEFINE_ADAPTIVECARD_ENUM(ActionRole, {
+            {ActionRole::Button, "Button"},
+            {ActionRole::Link, "Link"},
+            {ActionRole::Tab, "Tab"},
+            {ActionRole::Menu, "Menu"},
+            {ActionRole::MenuItem, "MenuItem"}});
+
     DEFINE_ADAPTIVECARD_ENUM(AssociatedInputs, {
             {AssociatedInputs::Auto, "Auto"},
             {AssociatedInputs::None, "None"}});
@@ -345,7 +360,8 @@ namespace AdaptiveCards
             {TextInputStyle::Email, "Email"},
             {TextInputStyle::Tel, "Tel"},
             {TextInputStyle::Text, "Text"},
-            {TextInputStyle::Url, "Url"}});
+            {TextInputStyle::Url, "Url"},
+            {TextInputStyle::Password, "Password"}});
 
     DEFINE_ADAPTIVECARD_ENUM(ContainerStyle, {
             {ContainerStyle::Default, "Default"},
@@ -376,4 +392,13 @@ namespace AdaptiveCards
     DEFINE_ADAPTIVECARD_ENUM(Mode, {
             {Mode::Primary, "primary"},
             {Mode::Secondary, "secondary"}});
+
+    DEFINE_ADAPTIVECARD_ENUM(ErrorStatusCode, {
+            {ErrorStatusCode::InvalidJson, "InvalidJson"},
+            {ErrorStatusCode::RenderFailed, "RenderFailed"},
+            {ErrorStatusCode::RequiredPropertyMissing, "RequiredPropertyMissing"},
+            {ErrorStatusCode::InvalidPropertyValue, "InvalidPropertyValue"},
+            {ErrorStatusCode::UnsupportedParserOverride, "UnsupportedParserOverride"},
+            {ErrorStatusCode::IdCollision, "IdCollision"},
+            {ErrorStatusCode::CustomError, "CustomError"}});
 }

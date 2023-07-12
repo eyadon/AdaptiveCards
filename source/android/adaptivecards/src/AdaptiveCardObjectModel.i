@@ -112,7 +112,8 @@ STD_OPTIONAL(AdaptiveCards::VerticalContentAlignment, StdOptionalVerticalContent
 #include "../../../shared/cpp/ObjectModel/BaseCardElement.h"
 #include "../../../shared/cpp/ObjectModel/BaseActionElement.h"
 #include "../../../shared/cpp/ObjectModel/BaseInputElement.h"
-#include "../../../shared/cpp/ObjectModel/CollectionTypeElement.h"
+#include "../../../shared/cpp/ObjectModel/CollectionCoreElement.h"
+#include "../../../shared/cpp/ObjectModel/StyledCollectionElement.h"
 #include "../../../shared/cpp/ObjectModel/AdaptiveCardParseWarning.h"
 #include "../../../shared/cpp/ObjectModel/ActionParserRegistration.h"
 #include "../../../shared/cpp/ObjectModel/ElementParserRegistration.h"
@@ -124,6 +125,7 @@ STD_OPTIONAL(AdaptiveCards::VerticalContentAlignment, StdOptionalVerticalContent
 #include "../../../shared/cpp/ObjectModel/InternalId.h"
 #include "../../../shared/cpp/ObjectModel/Column.h"
 #include "../../../shared/cpp/ObjectModel/ColumnSet.h"
+#include "../../../shared/cpp/ObjectModel/ChoicesData.h"
 #include "../../../shared/cpp/ObjectModel/ChoiceInput.h"
 #include "../../../shared/cpp/ObjectModel/ChoiceSetInput.h"
 #include "../../../shared/cpp/ObjectModel/DateInput.h"
@@ -151,6 +153,8 @@ STD_OPTIONAL(AdaptiveCards::VerticalContentAlignment, StdOptionalVerticalContent
 #include "../../../shared/cpp/ObjectModel/TableRow.h"
 #include "../../../shared/cpp/ObjectModel/TextBlock.h"
 #include "../../../shared/cpp/ObjectModel/ActionSet.h"
+#include "../../../shared/cpp/ObjectModel/CaptionSource.h"
+#include "../../../shared/cpp/ObjectModel/ContentSource.h"
 #include "../../../shared/cpp/ObjectModel/MediaSource.h"
 #include "../../../shared/cpp/ObjectModel/Media.h"
 #include "../../../shared/cpp/ObjectModel/ToggleVisibilityAction.h"
@@ -183,7 +187,8 @@ STD_OPTIONAL(AdaptiveCards::VerticalContentAlignment, StdOptionalVerticalContent
 %shared_ptr(AdaptiveCards::BaseCardElementParser)
 %shared_ptr(AdaptiveCards::ActionElementParserWrapper)
 %shared_ptr(AdaptiveCards::BaseCardElementParserWrapper)
-%shared_ptr(AdaptiveCards::CollectionTypeElement)
+%shared_ptr(AdaptiveCards::CollectionCoreElement)
+%shared_ptr(AdaptiveCards::StyledCollectionElement)
 %shared_ptr(AdaptiveCards::FeatureRegistration)
 %shared_ptr(AdaptiveCards::BackgroundImage)
 %shared_ptr(AdaptiveCards::Container)
@@ -194,6 +199,7 @@ STD_OPTIONAL(AdaptiveCards::VerticalContentAlignment, StdOptionalVerticalContent
 %shared_ptr(AdaptiveCards::ColumnSet)
 %shared_ptr(AdaptiveCards::Fact)
 %shared_ptr(AdaptiveCards::FactSet)
+%shared_ptr(AdaptiveCards::ChoicesData)
 %shared_ptr(AdaptiveCards::ChoiceInput)
 %shared_ptr(AdaptiveCards::ChoiceSetInput)
 %shared_ptr(AdaptiveCards::DateInput)
@@ -229,6 +235,8 @@ STD_OPTIONAL(AdaptiveCards::VerticalContentAlignment, StdOptionalVerticalContent
 %shared_ptr(AdaptiveCards::ImageSetParser)
 %shared_ptr(AdaptiveCards::DateInputParser)
 %shared_ptr(AdaptiveCards::DateTimePreparsedToken)
+%shared_ptr(AdaptiveCards::ContentSource)
+%shared_ptr(AdaptiveCards::CaptionSource)
 %shared_ptr(AdaptiveCards::MediaSource)
 %shared_ptr(AdaptiveCards::Media)
 %shared_ptr(AdaptiveCards::MediaParser)
@@ -465,6 +473,7 @@ namespace Json {
 %template(FactVector) std::vector<std::shared_ptr<AdaptiveCards::Fact> >;
 %template(ColumnVector) std::vector<std::shared_ptr<AdaptiveCards::Column> >;
 %template(ChoiceInputVector) std::vector<std::shared_ptr<AdaptiveCards::ChoiceInput> >;
+%template(CaptionSourceVector) std::vector<std::shared_ptr<AdaptiveCards::CaptionSource> >;
 %template(MediaSourceVector) std::vector<std::shared_ptr<AdaptiveCards::MediaSource> >;
 %template(BaseActionElementVector) std::vector<std::shared_ptr<AdaptiveCards::BaseActionElement> >;
 %template(DateTimePreparsedTokenVector) std::vector<std::shared_ptr<AdaptiveCards::DateTimePreparsedToken> >;
@@ -901,7 +910,8 @@ namespace Json {
 %include "../../../shared/cpp/ObjectModel/BaseActionElement.h"
 %include "../../../shared/cpp/ObjectModel/BaseInputElement.h"
 %include "../../../shared/cpp/ObjectModel/BackgroundImage.h"
-%include "../../../shared/cpp/ObjectModel/CollectionTypeElement.h"
+%include "../../../shared/cpp/ObjectModel/CollectionCoreElement.h"
+%include "../../../shared/cpp/ObjectModel/StyledCollectionElement.h"
 %include "../../../shared/cpp/ObjectModel/FeatureRegistration.h"
 %include "../../../shared/cpp/ObjectModel/SemanticVersion.h"
 %include "../../../shared/cpp/ObjectModel/Container.h"
@@ -909,6 +919,7 @@ namespace Json {
 %include "../../../shared/cpp/ObjectModel/ImageSet.h"
 %include "../../../shared/cpp/ObjectModel/Column.h"
 %include "../../../shared/cpp/ObjectModel/ColumnSet.h"
+%include "../../../shared/cpp/ObjectModel/ChoicesData.h"
 %include "../../../shared/cpp/ObjectModel/ChoiceInput.h"
 %include "../../../shared/cpp/ObjectModel/ChoiceSetInput.h"
 %include "../../../shared/cpp/ObjectModel/DateInput.h"
@@ -938,6 +949,8 @@ namespace Json {
 %include "../../../shared/cpp/ObjectModel/TableColumnDefinition.h"
 %include "../../../shared/cpp/ObjectModel/TableRow.h"
 %include "../../../shared/cpp/ObjectModel/TextBlock.h"
+%include "../../../shared/cpp/ObjectModel/ContentSource.h"
+%include "../../../shared/cpp/ObjectModel/CaptionSource.h"
 %include "../../../shared/cpp/ObjectModel/MediaSource.h"
 %include "../../../shared/cpp/ObjectModel/Media.h"
 %include "../../../shared/cpp/ObjectModel/ToggleVisibilityTarget.h"

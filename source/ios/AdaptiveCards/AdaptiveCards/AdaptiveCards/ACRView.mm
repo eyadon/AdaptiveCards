@@ -509,37 +509,29 @@ typedef UIImage * (^ImageLoadBlock)(NSURL *url);
         url = [NSURL URLWithString:nSUrlStr relativeToURL:_hostConfig.baseURL];
     }
 
-    NSObject<ACOIResourceResolver> *imageResourceResolver = [_hostConfig getResourceResolverForScheme:[url scheme]];
-    ImageLoadBlock imageloadblock = nil;
-    if (!imageResourceResolver || ![imageResourceResolver respondsToSelector:@selector(resolveImageResource:)]) {
-        imageloadblock = ^(NSURL *url) {
-            // download image
-            UIImage *img = nil;
-            if ([url.scheme isEqualToString:@"data"]) {
-                NSString *absoluteUri = url.absoluteString;
-                std::string dataUri = AdaptiveCards::AdaptiveBase64Util::ExtractDataFromUri(std::string([absoluteUri UTF8String]));
-                std::vector<char> decodedDataUri = AdaptiveCards::AdaptiveBase64Util::Decode(dataUri);
-                NSData *decodedBase64 = [NSData dataWithBytes:decodedDataUri.data() length:decodedDataUri.size()];
-                img = [UIImage imageWithData:decodedBase64];
-            } else {
-                img = [UIImage imageWithData:[NSData dataWithContentsOfURL:url]];
-            }
-            return img;
-        };
-    }
+    ImageLoadBlock imageloadblock = ^(NSURL *url) {
+        // download image
+        UIImage *img = nil;
+        if ([url.scheme isEqualToString:@"data"]) {
+            NSString *absoluteUri = url.absoluteString;
+            std::string dataUri = AdaptiveCards::AdaptiveBase64Util::ExtractDataFromUri(std::string([absoluteUri UTF8String]));
+            std::vector<char> decodedDataUri = AdaptiveCards::AdaptiveBase64Util::Decode(dataUri);
+            NSData *decodedBase64 = [NSData dataWithBytes:decodedDataUri.data() length:decodedDataUri.size()];
+            img = [UIImage imageWithData:decodedBase64];
+        } else {
+            img = [UIImage imageWithData:[NSData dataWithContentsOfURL:url]];
+        }
+        return img;
+    };
 
     dispatch_group_async(_async_tasks_group, _global_queue,
                          ^{
-                             UIImage *img = nil;
-                             if (imageloadblock) {
-                                 img = imageloadblock(url);
-                             } else if (imageResourceResolver) {
-                                 img = [imageResourceResolver resolveImageResource:url];
+                             UIImage *img = (imageloadblock) ? imageloadblock(url) : nil;
+                             if (img) {
+                                 dispatch_sync(self->_serial_queue, ^{
+                                     self->_imageViewMap[nSUrlStr] = img;
+                                 });
                              }
-
-                             dispatch_sync(self->_serial_queue, ^{
-                                 self->_imageViewMap[nSUrlStr] = img;
-                             });
                          });
 }
 
@@ -727,8 +719,6 @@ typedef UIImage * (^ImageLoadBlock)(NSURL *url);
     NSNumber *number = nil;
     NSString *nSUrlStr = nil;
 
-    _numberOfSubscribers++;
-
     number = [NSNumber numberWithUnsignedLongLong:(unsigned long long)elem.get()];
     nSUrlStr = [NSString stringWithCString:elem->GetIconUrl().c_str() encoding:[NSString defaultCStringEncoding]];
     if (!key) {
@@ -740,6 +730,7 @@ typedef UIImage * (^ImageLoadBlock)(NSURL *url);
     if (ACOImageViewIF == [_hostConfig getResolverIFType:[url scheme]]) {
         if (observerAction) {
             observerAction(imageResourceResolver, key, elem, url, self);
+            _numberOfSubscribers++;
         }
     } else {
         [self loadImage:[nSUrlStr cStringUsingEncoding:NSUTF8StringEncoding]];
@@ -763,7 +754,7 @@ typedef UIImage * (^ImageLoadBlock)(NSURL *url);
     }
 }
 
-- (void)updatePaddingMap:(std::shared_ptr<CollectionTypeElement> const &)collection view:(UIView *)view
+- (void)updatePaddingMap:(std::shared_ptr<StyledCollectionElement> const &)collection view:(UIView *)view
 {
     if (view && collection && collection->GetPadding()) {
         NSNumber *key = [NSNumber numberWithUnsignedLongLong:collection->GetInternalId().Hash()];
@@ -776,7 +767,7 @@ typedef UIImage * (^ImageLoadBlock)(NSURL *url);
 {
     const CardElementType type = element->GetElementType();
     if (type == CardElementType::Container || type == CardElementType::ColumnSet || type == CardElementType::Column) {
-        std::shared_ptr<CollectionTypeElement> collection = std::dynamic_pointer_cast<CollectionTypeElement>(element);
+        std::shared_ptr<StyledCollectionElement> collection = std::dynamic_pointer_cast<StyledCollectionElement>(element);
         if (view && collection && collection->GetStyle() != card->GetStyle()) {
             NSNumber *key = [NSNumber numberWithUnsignedLongLong:collection->GetInternalId().Hash()];
             _paddingMap[[key stringValue]] = view;

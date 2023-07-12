@@ -8,7 +8,7 @@
 
 using namespace AdaptiveCards;
 
-Column::Column() : CollectionTypeElement(CardElementType::Column), m_width("Auto"), m_pixelWidth(0)
+Column::Column() : StyledCollectionElement(CardElementType::Column), m_width("Auto"), m_pixelWidth(0)
 {
     PopulateKnownPropertiesSet();
 }
@@ -71,7 +71,7 @@ std::string Column::Serialize() const
 
 Json::Value Column::SerializeToJsonValue() const
 {
-    Json::Value root = CollectionTypeElement::SerializeToJsonValue();
+    Json::Value root = StyledCollectionElement::SerializeToJsonValue();
 
     if (!m_width.empty())
     {
@@ -95,35 +95,37 @@ Json::Value Column::SerializeToJsonValue() const
 
 void Column::PopulateKnownPropertiesSet()
 {
-    m_knownProperties.insert({AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::Items),
-                              AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::Rtl),
-                              AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::SelectAction),
-                              AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::Width),
-                              AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::Style),
-                              AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::VerticalContentAlignment)});
+    m_knownProperties.insert(
+        {AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::Items),
+         AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::Rtl),
+         AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::SelectAction),
+         AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::Width),
+         AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::Style),
+         AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::VerticalContentAlignment)});
 }
 
 void Column::GetResourceInformation(std::vector<RemoteResourceInformation>& resourceInfo)
 {
     auto columnItems = GetItems();
-    CollectionTypeElement::GetResourceInformation<BaseCardElement>(resourceInfo, columnItems);
+    StyledCollectionElement::GetResourceInformation<BaseCardElement>(resourceInfo, columnItems);
     return;
 }
 
 void Column::DeserializeChildren(ParseContext& context, const Json::Value& value)
 {
     // Parse Items
-    auto cardElements = ParseUtil::GetElementCollection<BaseCardElement>(true, // isTopToBottomContainer
-                                                                         context,
-                                                                         value,
-                                                                         AdaptiveCardSchemaKey::Items,
-                                                                         false); // isRequired
+    auto cardElements = ParseUtil::GetElementCollection<BaseCardElement>(
+        true, // isTopToBottomContainer
+        context,
+        value,
+        AdaptiveCardSchemaKey::Items,
+        false); // isRequired
     m_items = std::move(cardElements);
 }
 
 std::shared_ptr<BaseCardElement> ColumnParser::Deserialize(ParseContext& context, const Json::Value& value)
 {
-    auto column = CollectionTypeElement::Deserialize<Column>(context, value);
+    auto column = StyledCollectionElement::Deserialize<Column>(context, value);
 
     const auto& fallbackElement = column->GetFallbackContent();
     if (fallbackElement)
@@ -140,9 +142,8 @@ std::shared_ptr<BaseCardElement> ColumnParser::Deserialize(ParseContext& context
 
         if (!isFallbackColumn)
         {
-            context.warnings.emplace_back(
-                std::make_shared<AdaptiveCardParseWarning>(WarningStatusCode::UnknownElementType,
-                                                           "Column Fallback must be a Column. Fallback content dropped."));
+            context.warnings.emplace_back(std::make_shared<AdaptiveCardParseWarning>(
+                WarningStatusCode::UnknownElementType, "Column Fallback must be a Column. Fallback content dropped."));
 
             column->SetFallbackContent(nullptr);
             column->SetFallbackType(FallbackType::None);

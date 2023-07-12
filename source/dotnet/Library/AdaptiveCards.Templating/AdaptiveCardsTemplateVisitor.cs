@@ -8,9 +8,11 @@ using Antlr4.Runtime.Tree;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AdaptiveCards.Templating
 {
@@ -21,7 +23,9 @@ namespace AdaptiveCards.Templating
     {
         private Stack<DataContext> dataContext = new Stack<DataContext>();
         private readonly JToken root;
+        private readonly JToken host;
         private readonly Options options;
+        private ArrayList templateVisitorWarnings;
 
         /// <summary>
         /// maintains data context
@@ -30,10 +34,12 @@ namespace AdaptiveCards.Templating
         {
             public JToken token;
             public AdaptiveCardsTemplateSimpleObjectMemory AELMemory;
-            public bool IsArrayType = false;
+            public bool IsArrayType;
 
             public JToken RootDataContext;
+            public JToken HostDataContext;
             public const string rootKeyword = "$root";
+            public const string hostKeyword = "$host";
             public const string dataKeyword = "$data";
             public const string indexKeyword = "$index";
 
@@ -42,9 +48,10 @@ namespace AdaptiveCards.Templating
             /// </summary>
             /// <param name="jtoken">new data to kept as data context</param>
             /// <param name="rootDataContext">root data context</param>
-            public DataContext(JToken jtoken, JToken rootDataContext)
+            /// <param name="hostDataContext">optional host data context</param>
+            public DataContext(JToken jtoken, JToken rootDataContext, JToken hostDataContext = null)
             {
-                Init(jtoken, rootDataContext);
+                Init(jtoken, rootDataContext, hostDataContext);
             }
 
             /// <summary>
@@ -53,12 +60,15 @@ namespace AdaptiveCards.Templating
             /// <exception cref="JsonException"><c>JToken.Parse(text)</c> can throw JsonException if <paramref name="text"/> is invalid json</exception>
             /// <param name="text">json in string</param>
             /// <param name="rootDataContext">a root data context</param>
-            public DataContext(string text, JToken rootDataContext)
+            /// <param name="hostDataContext">optional host data context</param>
+            public DataContext(string text, JToken rootDataContext, JToken hostDataContext = null)
             {
                 // disable date parsing handling
-                var jsonReader = new JsonTextReader(new StringReader(text)) { DateParseHandling = DateParseHandling.None };
-                var jtoken = JToken.Load(jsonReader);
-                Init(jtoken, rootDataContext);
+                using (var jsonReader = new JsonTextReader(new StringReader(text)) { DateParseHandling = DateParseHandling.None })
+                {
+                    var jtoken = JToken.Load(jsonReader);
+                    Init(jtoken, rootDataContext, hostDataContext);
+                }
             }
 
             /// <summary>
@@ -66,12 +76,14 @@ namespace AdaptiveCards.Templating
             /// </summary>
             /// <param name="jtoken">current data context</param>
             /// <param name="rootDataContext">root data context</param>
-            private void Init(JToken jtoken, JToken rootDataContext)
+            /// <param name="hostDataContext">optional host data context</param>
+            private void Init(JToken jtoken, JToken rootDataContext, JToken hostDataContext)
             {
                 AELMemory = (jtoken is JObject) ? new AdaptiveCardsTemplateSimpleObjectMemory(jtoken) : new AdaptiveCardsTemplateSimpleObjectMemory(new JObject());
 
                 token = jtoken;
                 RootDataContext = rootDataContext;
+                HostDataContext = hostDataContext;
 
                 if (jtoken is JArray)
                 {
@@ -80,6 +92,7 @@ namespace AdaptiveCards.Templating
 
                 AELMemory.SetValue(dataKeyword, token);
                 AELMemory.SetValue(rootKeyword, rootDataContext);
+                AELMemory.SetValue(hostKeyword, hostDataContext);
             }
 
             /// <summary>
@@ -91,7 +104,7 @@ namespace AdaptiveCards.Templating
             {
                 var jarray = token as JArray;
                 var jtokenAtIndex = jarray[index];
-                var dataContext = new DataContext(jtokenAtIndex, RootDataContext);
+                var dataContext = new DataContext(jtokenAtIndex, RootDataContext, HostDataContext);
                 dataContext.AELMemory.SetValue(indexKeyword, index);
                 return dataContext;
             }
@@ -101,23 +114,41 @@ namespace AdaptiveCards.Templating
         /// a constructor for AdaptiveCardsTemplateVisitor
         /// </summary>
         /// <param name="nullSubstitutionOption">it will called upon when AEL finds no suitable functions registered in given AEL expression during evaluation the expression</param>
-        /// <param name="data">json data in string which will be set as a root data context</param>
-        public AdaptiveCardsTemplateVisitor(Func<string, object> nullSubstitutionOption, string data = null)
+        /// <param name="data">json data as string which will be set as a root data context</param>
+        /// <param name="hostData">json data as string which will be set as the host data context</param>
+        public AdaptiveCardsTemplateVisitor(Func<string, object> nullSubstitutionOption, string data = null, string hostData = null)
         {
-            if (data?.Length != 0)
+            if (!String.IsNullOrEmpty(hostData))
+            {
+                // parse and save host context
+                try
+                {
+                    using (var jsonReader = new JsonTextReader(new StringReader(hostData)) { DateParseHandling = DateParseHandling.None })
+                    {
+                        host = JToken.Load(jsonReader);
+                    }
+                }
+                catch (JsonException innerException)
+                {
+                    throw new AdaptiveTemplateException("Setting host data failed", innerException);
+                }
+            }
+
+            if (!String.IsNullOrEmpty(data))
             {
                 // set data as root data context
                 try
                 {
-                    var jsonReader = new JsonTextReader(new StringReader(data)) { DateParseHandling = DateParseHandling.None };
-                    root = JToken.Load(jsonReader);
-                    PushDataContext(data, root);
+                    using (var jsonReader = new JsonTextReader(new StringReader(data)) { DateParseHandling = DateParseHandling.None })
+                    {
+                        root = JToken.Load(jsonReader);
+                        PushDataContext(data, root);
+                    }
                 }
                 catch (JsonException innerException)
                 {
                     throw new AdaptiveTemplateException("Setting root data failed with given data context", innerException);
                 }
-                
             }
 
             // if null, set default option
@@ -125,6 +156,8 @@ namespace AdaptiveCards.Templating
             {
                 NullSubstitution = nullSubstitutionOption != null? nullSubstitutionOption : (path) => $"${{{path}}}"
             };
+
+            templateVisitorWarnings = new ArrayList();
         }
 
         /// <summary>
@@ -143,7 +176,7 @@ namespace AdaptiveCards.Templating
         /// <param name="rootDataContext">current root data context</param>
         private void PushDataContext(string stringToParse, JToken rootDataContext)
         {
-            dataContext.Push(new DataContext(stringToParse, rootDataContext));
+            dataContext.Push(new DataContext(stringToParse, rootDataContext, host));
         }
 
         /// <summary>
@@ -167,11 +200,19 @@ namespace AdaptiveCards.Templating
                 throw new ArgumentNullException("Parent data context or selection path is null");
             }
 
-            var (value, error) = new ValueExpression("=" + jpath).TryGetValue(parentDataContext.AELMemory);
+            var (value, error) = new ValueExpression("=" + Regex.Unescape(jpath)).TryGetValue(parentDataContext.AELMemory);
             if (error == null)
             {
-                var serializedValue = JsonConvert.SerializeObject(value);
-                dataContext.Push(new DataContext(serializedValue, parentDataContext.RootDataContext));
+                if (value is JToken jvalue)
+                {
+                    dataContext.Push(new DataContext(jvalue, parentDataContext.RootDataContext, parentDataContext.HostDataContext));
+
+                }
+                else
+                {
+                    var serializedValue = JsonConvert.SerializeObject(value);
+                    dataContext.Push(new DataContext(serializedValue, parentDataContext.RootDataContext, parentDataContext.HostDataContext));
+                }
             }
             else
             {
@@ -198,7 +239,16 @@ namespace AdaptiveCards.Templating
         }
 
         /// <summary>
-        /// antlr runtime wil call this method when parse tree's context is <see cref="AdaptiveCardsTemplateParser.TemplateDataContext"/>
+        /// Getter for templateVisitorWarnings
+        /// </summary>
+        /// <returns>ArrayList</returns>
+        public ArrayList getTemplateVisitorWarnings()
+        {
+            return templateVisitorWarnings;
+        }
+
+        /// <summary>
+        /// antlr runtime will call this method when parse tree's context is <see cref="AdaptiveCardsTemplateParser.TemplateDataContext"/>
         /// <para>It is used in parsing a pair that has $data as key</para>
         /// <para>It creates new data context, and set it as current memory scope</para>
         /// </summary>
@@ -232,7 +282,7 @@ namespace AdaptiveCards.Templating
                     var templateLiteral = (templateStrings[0] as AdaptiveCardsTemplateParser.TemplatedStringContext).TEMPLATELITERAL();
                     try
                     {
-                        string templateLiteralExpression = templateLiteral.GetText(); 
+                        string templateLiteralExpression = templateLiteral.GetText();
                         PushTemplatedDataContext(templateLiteralExpression.Substring(2, templateLiteralExpression.Length - 3));
                     }
                     catch (ArgumentNullException)
@@ -246,7 +296,7 @@ namespace AdaptiveCards.Templating
                 }
             }
             else
-            // else clause handles all of the ordinary json values 
+            // else clause handles all of the ordinary json values
             {
                 string childJson = templateDataValueNode.GetText();
                 try
@@ -335,8 +385,20 @@ namespace AdaptiveCards.Templating
                 return result;
             }
 
+            bool isTrue = false;
+
+            try
+            {
+                isTrue = IsTrue(result.Predicate, dataContext.token);
+            }
+            catch (System.FormatException)
+            {
+                templateVisitorWarnings.Add($"WARN: Could not evaluate {result.Predicate} because it could not be found in the provided data. " +
+                                    "The condition has been set to false by default.");
+            }
+
             // evaluate $when
-            result.WhenEvaluationResult = IsTrue(result.Predicate, dataContext.token) ?
+            result.WhenEvaluationResult = isTrue ?
                 AdaptiveCardsTemplateResult.EvaluationResult.EvaluatedToTrue :
                 AdaptiveCardsTemplateResult.EvaluationResult.EvaluatedToFalse;
 
@@ -439,6 +501,7 @@ namespace AdaptiveCards.Templating
             }
 
             int repeatsCounts = 1;
+            bool isObjAdded = false;
             var dataContext = GetCurrentDataContext();
 
             if (isArrayType && hasDataContext)
@@ -451,7 +514,7 @@ namespace AdaptiveCards.Templating
             // indicates the number of removed json object(s)
             int removedCounts = 0;
             var comma = context.COMMA();
-            string jsonPairDelimieter = (comma != null && comma.Length > 0) ? comma[0].GetText() : "";
+            string jsonPairDelimiter = (comma != null && comma.Length > 0) ? comma[0].GetText() : "";
 
             // loop for repeating obj parsed in the inner loop
             for (int iObj = 0; iObj < repeatsCounts; iObj++)
@@ -486,14 +549,26 @@ namespace AdaptiveCards.Templating
                         // a pair after first pair is added
                         if (isPairAdded && !returnedResult.IsWhen)
                         {
-                            result.Append(jsonPairDelimieter);
+                            result.Append(jsonPairDelimiter);
                         }
 
                         result.Append(returnedResult);
 
                         if (returnedResult.IsWhen)
                         {
-                            whenEvaluationResult = returnedResult.WhenEvaluationResult;
+                            if (returnedResult.WhenEvaluationResult == AdaptiveCardsTemplateResult.EvaluationResult.NotEvaluated)
+                            {
+                                // The when expression could not be evaluated, so we are defaulting the value to false
+                                whenEvaluationResult = AdaptiveCardsTemplateResult.EvaluationResult.EvaluatedToFalse;
+
+                                templateVisitorWarnings.Add($"WARN: Could not evaluate {returnedResult} because it is not an expression or the " +
+                                    $"expression is invalid. The $when condition has been set to false by default.");
+
+                            }
+                            else
+                            {
+                                whenEvaluationResult = returnedResult.WhenEvaluationResult;
+                            }
                         }
                         else
                         {
@@ -507,11 +582,14 @@ namespace AdaptiveCards.Templating
 
                 if (whenEvaluationResult != AdaptiveCardsTemplateResult.EvaluationResult.EvaluatedToFalse)
                 {
-                    if (iObj != repeatsCounts - 1)
+                    if (isObjAdded)
                     {
-                        result.Append(jsonPairDelimieter);
+                        // add a delimiter, e.g ',' before appending
+                        // another object after first object is added
+                        combinedResult.Append(jsonPairDelimiter);
                     }
                     combinedResult.Append(result);
+                    isObjAdded = true;
                 }
                 else
                 {
@@ -529,7 +607,7 @@ namespace AdaptiveCards.Templating
                 PopDataContext();
             }
 
-            // all existing json obj in input and repeated json obj if any have been removed 
+            // all existing json obj in input and repeated json obj if any have been removed
             if (removedCounts == repeatsCounts)
             {
                 combinedResult.HasItBeenDropped = true;
@@ -539,7 +617,7 @@ namespace AdaptiveCards.Templating
         }
 
         /// <summary>
-        /// Visitor method for <c>ITernminalNode</c> 
+        /// Visitor method for <c>ITernminalNode</c>
         /// <para>collects token as string and expand template if needed</para>
         /// </summary>
         /// <param name="node"></param>
@@ -575,8 +653,7 @@ namespace AdaptiveCards.Templating
             if (HasDataContext())
             {
                 DataContext currentDataContext = GetCurrentDataContext();
-                string templateString = node.GetText();
-                return new AdaptiveCardsTemplateResult(Expand(templateString, currentDataContext.AELMemory, isExpanded, options));
+                return new AdaptiveCardsTemplateResult(Expand(Regex.Unescape(node.GetText()), currentDataContext.AELMemory, isExpanded, options));
             }
 
             return new AdaptiveCardsTemplateResult(node.GetText());
@@ -602,7 +679,7 @@ namespace AdaptiveCards.Templating
             {
                 exp = Expression.Parse(unboundString.Substring(2, unboundString.Length - 3));
             }
-            // AEL can throw any errors, for example, System.Data.Syntax error will be thrown from AEL's ANTLR 
+            // AEL can throw any errors, for example, System.Data.Syntax error will be thrown from AEL's ANTLR
             // when AEL encounters unknown functions.
             // We can't possibly know all errors and we simply want to leave the expression as it is when there are any exceptions
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -624,16 +701,14 @@ namespace AdaptiveCards.Templating
             var (value, error) = exp.TryEvaluate(data, options);
             if (error == null)
             {
-                // if isTemplatedString, it's a leaf node, and if it's string, the text should be wrapped with double quotes
-                if (isTemplatedString && value is string) 
+                string s = JsonConvert.SerializeObject(value);
+                // after serialization, the double quotes should be removed
+                if (value is string && !isTemplatedString)
                 {
-                    result.Append('"');
-                    result.Append(value);
-                    result.Append('"');
-                } else
-                {
-                    result.Append(value);
+                    s = s.Substring(1, s.Length - 2);
                 }
+
+                result.Append(s);
             }
             else
             {
@@ -654,10 +729,19 @@ namespace AdaptiveCards.Templating
             {
                 throw new ArgumentNullException(nameof(context));
             }
-            // when this node is visited, the children of this node is shown as below: 
+            // when this node is visited, the children of this node is shown as below:
             // this node is visited only when parsing was correctly done
-            // [ '{', '$when', ':', ',', 'expression'] 
+            // [ '{', '$when', ':', ',', 'expression']
             var result = Visit(context.templateExpression());
+
+            if (!result.IsWhen)
+            {
+                // We know that this result was supposed to be IsWhen since it is called from VisitTemplateWhen
+                // We create a result with `IsWhen = false` if the expression is invalid
+                // Result will now correctly follow the rest of the IsWhen logic
+                result.IsWhen = true;
+            }
+
             return result;
         }
 
@@ -681,17 +765,25 @@ namespace AdaptiveCards.Templating
             AdaptiveCardsTemplateResult result = new AdaptiveCardsTemplateResult(context.LSB().GetText());
             var values = context.value();
             var arrayDelimiters = context.COMMA();
+            bool isValueAdded = false;
 
             // visit each json value in json array and integrate parsed result
             for (int i = 0; i < values.Length; i++)
             {
                 var value = context.value(i);
                 var parsedResult = Visit(value);
-                result.Append(parsedResult);
-                // only add delimiter when parsedResult has not been dropped, and delimiter is needed
-                if (!parsedResult.HasItBeenDropped && i != values.Length - 1 && arrayDelimiters.Length > 0)
+
+                // only add delimiter when parsedResult has not been dropped,
+                // and a value has already been added to the array
+                if (isValueAdded && !parsedResult.HasItBeenDropped && arrayDelimiters.Length > 0)
                 {
                     result.Append(arrayDelimiters[0].GetText());
+                }
+
+                if (!parsedResult.HasItBeenDropped)
+                {
+                    result.Append(parsedResult);
+                    isValueAdded = true;
                 }
             }
 
@@ -708,7 +800,7 @@ namespace AdaptiveCards.Templating
         /// <returns><c>true</c> if predicate is evaluated to <c>true</c></returns>
         public static bool IsTrue(string predicate, JToken data)
         {
-            var (value, error) = new ValueExpression(predicate).TryGetValue(data);
+            var (value, error) = new ValueExpression(Regex.Unescape(predicate)).TryGetValue(data);
             if (error == null)
             {
                 return bool.Parse(value as string);

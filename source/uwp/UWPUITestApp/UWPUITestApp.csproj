@@ -19,7 +19,7 @@
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <GenerateAppxPackageOnBuild>True</GenerateAppxPackageOnBuild>
-    <PackageCertificateThumbprint>571260330A6015C25387D6A440FB552DF3964EA1</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>F47BF671C71E6F8AD81A5858C73191921BC9CF85</PackageCertificateThumbprint>
     <PackageCertificateKeyFile>UWPUITestApp_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
@@ -175,7 +175,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\samples\v1.0\Scenarios\ActivityUpdate.json">
+    <None Include="..\..\..\samples\v1.5\Scenarios\ActivityUpdate.json">
       <Link>LinkedTestCards\ActivityUpdate.json</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -183,8 +183,16 @@
       <Link>LinkedTestCards\Input.Text.ErrorMessage.json</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\..\samples\v1.5\Scenarios\InputFormWithLabels.json">
-      <Link>LinkedTestCards\InputFormWithLabels.json</Link>
+    <None Include="..\..\..\samples\ConsolidatedElementSamples\Input.Toggle.json">
+      <Link>LinkedTestCards\Input.Toggle.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\..\samples\v1.5\Tests\PrimarySecondaryShowCards.json">
+      <Link>LinkedTestCards\PrimarySecondaryShowCards.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\..\samples\v1.5\Elements\Input.Text.PasswordStyle.json">
+      <Link>LinkedTestCards\Input.Text.PasswordStyle.json</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="UWPUITestApp_TemporaryKey.pfx" />

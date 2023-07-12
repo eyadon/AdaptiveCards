@@ -50,6 +50,11 @@
 				}
 			]
 		},
+		"metadata": {
+			"type": "Metadata",
+			"description": "Defines various metadata properties typically not used for rendering the card",
+			"version": "1.6"
+		},
 		"minHeight": {
 			"type": "string",
 			"description": "Specifies the minimum height of the card.",
@@ -60,6 +65,11 @@
 			"features": [
 				2293
 			]
+		},
+		"rtl": {
+			"type": "boolean?",
+			"description":  "When `true` content in this Adaptive Card should be presented right to left. When 'false' content in this Adaptive Card should be presented left to right. If unset, the default platform behavior will apply.",
+			"version": "1.5"
 		},
 		"speak": {
 			"type": "string",

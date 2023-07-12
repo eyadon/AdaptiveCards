@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
@@ -19,7 +20,6 @@ import io.adaptivecards.objectmodel.ActionType;
 import io.adaptivecards.objectmodel.BackgroundImage;
 import io.adaptivecards.objectmodel.BaseActionElement;
 import io.adaptivecards.objectmodel.BaseCardElement;
-import io.adaptivecards.objectmodel.CollectionTypeElement;
 import io.adaptivecards.objectmodel.Container;
 import io.adaptivecards.objectmodel.ContainerBleedDirection;
 import io.adaptivecards.objectmodel.ContainerStyle;
@@ -28,6 +28,7 @@ import io.adaptivecards.objectmodel.HeightType;
 import io.adaptivecards.objectmodel.HorizontalAlignment;
 import io.adaptivecards.objectmodel.HostConfig;
 import io.adaptivecards.objectmodel.SubmitAction;
+import io.adaptivecards.objectmodel.StyledCollectionElement;
 import io.adaptivecards.objectmodel.VerticalContentAlignment;
 import io.adaptivecards.renderer.AdaptiveFallbackException;
 import io.adaptivecards.renderer.BackgroundImageLoaderAsync;
@@ -86,7 +87,7 @@ public class ContainerRenderer extends BaseCardElementRenderer
         ContainerStyle containerStyle = renderArgs.getContainerStyle();
         ContainerStyle styleForThis = getLocalContainerStyle(container, containerStyle);
         applyPadding(styleForThis, containerStyle, containerView, hostConfig);
-        applyContainerStyle(styleForThis, containerView, hostConfig);
+        applyContainerStyle(styleForThis, containerStyle, containerView, hostConfig);
         applyBleed(container, containerView, context, hostConfig);
         BaseCardElementRenderer.applyRtl(container.GetRtl(), containerView);
 
@@ -142,12 +143,12 @@ public class ContainerRenderer extends BaseCardElementRenderer
     /**
      * @deprecated renamed to {@link #applyBleed}
      */
-    public static void ApplyBleed(CollectionTypeElement collectionElement, ViewGroup collectionElementView, Context context, HostConfig hostConfig)
+    public static void ApplyBleed(StyledCollectionElement collectionElement, ViewGroup collectionElementView, Context context, HostConfig hostConfig)
     {
         applyBleed(collectionElement, collectionElementView, context, hostConfig);
     }
 
-    public static void applyBleed(CollectionTypeElement collectionElement, ViewGroup collectionElementView, Context context, HostConfig hostConfig)
+    public static void applyBleed(StyledCollectionElement collectionElement, ViewGroup collectionElementView, Context context, HostConfig hostConfig)
     {
         if (collectionElement.GetBleed() && collectionElement.GetCanBleed())
         {
@@ -189,7 +190,7 @@ public class ContainerRenderer extends BaseCardElementRenderer
     public static void ApplyPadding(ContainerStyle computedContainerStyle, ContainerStyle parentContainerStyle, ViewGroup collectionElementView, HostConfig hostConfig)
     {
         applyPadding(computedContainerStyle, parentContainerStyle, collectionElementView, hostConfig);
-        applyContainerStyle(computedContainerStyle, collectionElementView, hostConfig);
+        applyContainerStyle(computedContainerStyle, parentContainerStyle, collectionElementView, hostConfig);
     }
 
     public static void applyPadding(ContainerStyle computedContainerStyle, ContainerStyle parentContainerStyle, ViewGroup collectionElementView, HostConfig hostConfig)
@@ -206,28 +207,32 @@ public class ContainerRenderer extends BaseCardElementRenderer
         }
     }
 
-    public static void applyContainerStyle(ContainerStyle computedContainerStyle, ViewGroup collectionElementView, HostConfig hostConfig)
+    public static void applyContainerStyle(ContainerStyle computedContainerStyle, ContainerStyle parentContainerStyle, ViewGroup collectionElementView, HostConfig hostConfig)
     {
-        int color = Color.parseColor(hostConfig.GetBackgroundColor(computedContainerStyle));
-        if (collectionElementView.getBackground() instanceof GradientDrawable)
+        if (computedContainerStyle != parentContainerStyle)
         {
-            ((GradientDrawable) collectionElementView.getBackground()).setColor(color);
-        }
-        else
-        {
-            collectionElementView.setBackgroundColor(color);
+            String backgroundColor = hostConfig.GetBackgroundColor(computedContainerStyle);
+            int color = Color.parseColor(backgroundColor);
+            if (collectionElementView.getBackground() instanceof GradientDrawable)
+            {
+                ((GradientDrawable) collectionElementView.getBackground()).setColor(color);
+            }
+            else
+            {
+                collectionElementView.setBackgroundColor(color);
+            }
         }
     }
 
     /**
      * @deprecated renamed to {@link #getLocalContainerStyle}
      */
-    public static ContainerStyle GetLocalContainerStyle(CollectionTypeElement collectionElement, ContainerStyle parentContainerStyle)
+    public static ContainerStyle GetLocalContainerStyle(StyledCollectionElement collectionElement, ContainerStyle parentContainerStyle)
     {
         return getLocalContainerStyle(collectionElement, parentContainerStyle);
     }
 
-    public static ContainerStyle getLocalContainerStyle(CollectionTypeElement collectionElement, ContainerStyle parentContainerStyle)
+    public static ContainerStyle getLocalContainerStyle(StyledCollectionElement collectionElement, ContainerStyle parentContainerStyle)
     {
         return computeContainerStyle(collectionElement.GetStyle(), parentContainerStyle);
     }
@@ -304,6 +309,27 @@ public class ContainerRenderer extends BaseCardElementRenderer
             view.setOnClickListener(new BaseActionElementRenderer.SelectActionOnClickListener(renderedCard, selectAction, cardActionHandler));
 
             applyTitleAndTooltip(selectAction, view);
+
+            if (view instanceof ViewGroup)
+            {
+                ViewGroup group = (ViewGroup) view;
+                if (group.getChildCount() == 1)
+                {
+                    View childView = group.getChildAt(0);
+                    if (childView.isFocusable())
+                    {
+                        childView.setFocusable(false);
+
+                        // setScreenReaderFocusable is only available in API level 28 (P) and above
+                        // Need to check the SDK version of the current device
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                        {
+                            childView.setScreenReaderFocusable(false);
+                        }
+                        childView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+                    }
+                }
+            }
         }
     }
 

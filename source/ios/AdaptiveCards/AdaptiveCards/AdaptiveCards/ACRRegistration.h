@@ -7,9 +7,16 @@
 //
 @class ACRBaseCardElementRenderer;
 
-#import "ACOBaseCardElement.h"
+#ifdef SWIFT_PACKAGE
+/// Swift Package Imports
 #import "ACRBaseActionElementRenderer.h"
 #import "ACRTargetBuilder.h"
+#else
+/// Cocoapods Imports
+#import <AdaptiveCards/ACRBaseActionElementRenderer.h>
+#import <AdaptiveCards/ACRTargetBuilder.h>
+#endif
+#import "ACOBaseCardElement.h"
 
 @interface ACRRegistration : NSObject
 
@@ -21,7 +28,7 @@
 
 - (ACRBaseActionElementRenderer *_Nullable)getActionRenderer:(NSNumber *_Nonnull)cardElementType;
 
-- (id<ACRIBaseActionSetRenderer>_Nullable)getActionSetRenderer;
+- (id<ACRIBaseActionSetRenderer> _Nullable)getActionSetRenderer;
 
 - (void)setActionRenderer:(ACRBaseActionElementRenderer *_Nullable)renderer actionElementType:(ACRActionType)actionElementType;
 
@@ -33,7 +40,7 @@
 
 - (void)setBaseCardElementRenderer:(ACRBaseCardElementRenderer *_Nullable)renderer cardElementType:(ACRCardElementType)cardElementType useResourceResolver:(BOOL)doUse;
 
-- (void)setActionSetRenderer:(id<ACRIBaseActionSetRenderer>_Nullable)actionsetRenderer;
+- (void)setActionSetRenderer:(id<ACRIBaseActionSetRenderer> _Nullable)actionsetRenderer;
 
 - (void)setCustomElementParser:(NSObject<ACOIBaseCardElementParser> *_Nonnull)customElementPars_Nonnuller key:(NSString *_Nonnull)key;
 
@@ -62,8 +69,8 @@
 - (nonnull NSString *)getFeatureVersion:(nullable NSString *)featureName;
 @end
 
-@interface ACRTargetBuilderRegistration: NSObject
+@interface ACRTargetBuilderRegistration : NSObject
 + (ACRTargetBuilderRegistration *_Nonnull)getInstance;
 - (ACRTargetBuilder *_Nullable)getTargetBuilder:(ACRActionType)actionElementType capability:(ACRTargetCapability)capability;
-- (void)setTargetBuilder:(ACRTargetBuilder*_Nullable)targetBuilder actionElementType:(ACRActionType)actionElementType capability:(ACRTargetCapability)capability;
+- (void)setTargetBuilder:(ACRTargetBuilder *_Nullable)targetBuilder actionElementType:(ACRActionType)actionElementType capability:(ACRTargetCapability)capability;
 @end

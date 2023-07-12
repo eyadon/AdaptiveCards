@@ -9,9 +9,7 @@
 #import "ACRChatWindow.h"
 #import "ACRCustomSubmitTargetBuilder.h"
 #import "ADCResolver.h"
-#import "AdaptiveCards/ACRAggregateTarget.h"
 #import "AdaptiveCards/ACRButton.h"
-#import "AdaptiveCards/ACROverflowTarget.h"
 #import "AdaptiveFileBrowserSource.h"
 #import "CustomActionNewType.h"
 #import "CustomActionOpenURLRenderer.h"
@@ -27,10 +25,11 @@ CGFloat kAdaptiveCardsWidth = 0;
 CGFloat kFileBrowserWidth = 0;
 
 @interface ViewController () {
-    BOOL _enableCustomRenderer;
     id<ACRIBaseActionSetRenderer> _defaultRenderer;
     ACRChatWindow *_dataSource;
+    __weak UIView *_targetView;
     dispatch_queue_t _global_queue;
+    __weak AVPlayerViewController *_mediaViewController;
 }
 
 @end
@@ -49,82 +48,12 @@ CGFloat kFileBrowserWidth = 0;
     }
 }
 
-- (IBAction)editText:(id)sender
+- (IBAction)toggleCustomRenderer:(UISwitch *)sender
 {
     [self.view endEditing:YES];
-    [self dismissViewControllerAnimated:YES completion:nil];
-    if (!self.editableStr) {
-        return;
-    }
-
-    UIStackView *filebrowserView = self.compositeFileBrowserView;
-    if (!self.editView) {
-        CGRect desiredDimension = filebrowserView.frame;
-        self.editView = [[UITextView alloc] initWithFrame:desiredDimension textContainer:nil];
-
-        [self.view addSubview:self.editView];
-        self.editView.directionalLockEnabled = NO;
-        self.editView.showsHorizontalScrollIndicator = YES;
-        self.editView.keyboardType = UIKeyboardTypeAlphabet;
-
-        CGRect frame = CGRectMake(0, 0, self.editView.frame.size.width, 30);
-        UIToolbar *toolBar = [[UIToolbar alloc] initWithFrame:frame];
-        UIBarButtonItem *flexSpace =
-            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
-                                                          target:nil
-                                                          action:nil];
-        UIBarButtonItem *doneButton =
-            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
-                                                          target:self
-                                                          action:@selector(dismissKeyboard)];
-        [toolBar setItems:@[ doneButton, flexSpace ] animated:NO];
-        [toolBar sizeToFit];
-        self.editView.inputAccessoryView = toolBar;
-    }
-    self.editView.hidden = NO;
-    self.editView.delegate = self;
-
-    NSMutableAttributedString *content =
-        [[NSMutableAttributedString alloc] initWithString:self.editableStr];
-    NSMutableParagraphStyle *para = [[NSMutableParagraphStyle alloc] init];
-    para.lineBreakMode = NSLineBreakByCharWrapping;
-    para.alignment = NSTextAlignmentLeft;
-    [content addAttributes:@{NSParagraphStyleAttributeName : para} range:NSMakeRange(0, 1)];
-    self.editView.attributedText = content;
-    UIFontDescriptor *dec = self.editView.font.fontDescriptor;
-    self.editView.font = [UIFont fontWithDescriptor:dec size:15];
-    self.editView.layer.borderWidth = 0.8;
-    filebrowserView.hidden = YES;
-}
-
-- (BOOL)textViewShouldEndEditing:(UITextView *)textView
-{
-    [textView resignFirstResponder];
-    return YES;
-}
-
-- (void)dismissKeyboard
-{
-    [self.editView resignFirstResponder];
-}
-
-- (void)textViewDidBeginEditing:(UITextView *)textView
-{
-    [textView becomeFirstResponder];
-}
-
-- (void)textViewDidEndEditing:(UITextView *)textView
-{
-    [textView resignFirstResponder];
-}
-
-- (IBAction)toggleCustomRenderer:(id)sender
-{
-    [self.view endEditing:YES];
-    _enableCustomRenderer = !_enableCustomRenderer;
     ACRRegistration *registration = [ACRRegistration getInstance];
 
-    if (_enableCustomRenderer) {
+    if (_enableCustomRendererSwitch.isOn) {
         // enum will be part of API in next iterations when custom renderer extended to non-action
         // type - tracked by issue #809
         [registration setActionRenderer:[CustomActionOpenURLRenderer getInstance]
@@ -140,7 +69,6 @@ CGFloat kFileBrowserWidth = 0;
 
         [[ACRTargetBuilderRegistration getInstance] setTargetBuilder:[ACRCustomSubmitTargetBuilder getInstance] actionElementType:ACRSubmit capability:ACRAction];
         [[ACRTargetBuilderRegistration getInstance] setTargetBuilder:[ACRCustomSubmitTargetBuilder getInstance] actionElementType:ACRSubmit capability:ACRQuickReply];
-        _enableCustomRendererButton.backgroundColor = UIColor.redColor;
         _defaultRenderer = [registration getActionSetRenderer];
         [registration setActionSetRenderer:self];
     } else {
@@ -149,12 +77,7 @@ CGFloat kFileBrowserWidth = 0;
         [registration setBaseCardElementRenderer:nil cardElementType:ACRNumberInput];
         [registration setBaseCardElementRenderer:nil cardElementType:ACRActionSet];
         [registration setActionSetRenderer:nil];
-        _enableCustomRendererButton.backgroundColor = [UIColor colorWithRed:0 / 255
-                                                                      green:122.0 / 255
-                                                                       blue:1
-                                                                      alpha:1];
     }
-    [self update:self.editableStr];
 }
 
 - (IBAction)applyText:(id)sender
@@ -170,6 +93,15 @@ CGFloat kFileBrowserWidth = 0;
 - (IBAction)deleteAllRows:(id)sender
 {
     [(ACRChatWindow *)self.chatWindow.dataSource deleteAllRows:self.chatWindow];
+
+    // clean the retrieved inputs
+    if ([self appIsBeingTested]) {
+        [self.retrievedInputsTextView setText:@" "];
+    }
+
+    if (_mediaViewController && _mediaViewController.player) {
+        [_mediaViewController.player pause];
+    }
 }
 
 - (void)viewDidLoad
@@ -181,7 +113,6 @@ CGFloat kFileBrowserWidth = 0;
     kAdaptiveCardsWidth = kFileBrowserWidth;
     [self registerForKeyboardNotifications];
 
-    _enableCustomRenderer = NO;
     self.curView = nil;
 
     ACRRegistration *registration = [ACRRegistration getInstance];
@@ -202,7 +133,6 @@ CGFloat kFileBrowserWidth = 0;
     self.ACVTabVC = [[ACVTableViewController alloc] init];
     [self addChildViewController:self.ACVTabVC];
     self.ACVTabVC.delegate = self;
-    self.ACVTabVC.tableView.rowHeight = 25;
     self.ACVTabVC.tableView.sectionFooterHeight = 5;
     self.ACVTabVC.tableView.sectionHeaderHeight = 5;
     self.ACVTabVC.tableView.scrollEnabled = YES;
@@ -240,33 +170,50 @@ CGFloat kFileBrowserWidth = 0;
     self.ACVTabVC.tableHeight.active = YES;
     ACVTabView.hidden = YES;
 
-    NSArray<UIStackView *> *buttons = [self buildButtonsLayout:fileBrowserView.centerXAnchor];
+    NSArray<UIStackView *> *buttons = [self buildControlLayout:fileBrowserView.centerXAnchor];
+    UIStackView *retrievedInputsLayout = [self buildRetrievedResultsLayout:fileBrowserView.centerXAnchor];
+
     UIStackView *buttonLayout0 = buttons[0], *buttonLayout1 = buttons[1];
 
     self.chatWindow = [[UITableView alloc] init];
     self.chatWindow.translatesAutoresizingMaskIntoConstraints = NO;
-    self.chatWindow.separatorStyle = UITableViewCellSeparatorStyleSingleLineEtched;
+    [self.chatWindow registerClass:[ACRChatWindowCell class] forCellReuseIdentifier:@"adaptiveCell"];
+    self.chatWindow.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
+
+    // set a identifier to ease development of UI tests
+    self.chatWindow.accessibilityIdentifier = @"ChatWindow";
 
     // the width of the AdaptiveCards does not need to be set.
     // if the width for Adaptive Cards is zero, the width is determined by the contraint(s) set externally on the card.
     _dataSource = [[ACRChatWindow alloc] init:kAdaptiveCardsWidth];
     _dataSource.adaptiveCardsDelegates = self;
+    _dataSource.adaptiveCardsMediaDelegates = self;
     self.chatWindow.dataSource = _dataSource;
 
     [self.view addSubview:self.chatWindow];
 
     UITableView *chatWindow = self.chatWindow;
-    NSDictionary *viewMap =
-        NSDictionaryOfVariableBindings(_compositeFileBrowserView, buttonLayout0, buttonLayout1, chatWindow);
 
-    NSArray<NSString *> *formats = [NSArray
-        arrayWithObjects:@"V:|-40-[_compositeFileBrowserView]-[buttonLayout0]-[buttonLayout1]-[chatWindow]-40@100-|",
-                         @"H:|-[chatWindow]-|", nil];
+    // if the app is being tested we render an extra layout that contains the
+    // retrieved input values json
+    NSString *layoutOption = [self appIsBeingTested] ? @"-[retrievedInputsLayout]-" : @"-";
 
-    [ViewController applyConstraints:formats variables:viewMap];
+    NSArray<NSString *> *visualFormats = @[ [NSString stringWithFormat:@"V:|-40-[_compositeFileBrowserView]-[buttonLayout0]-[buttonLayout1]%@[chatWindow]-40@100-|", layoutOption], @"H:|-[chatWindow]-|", @"H:|-[buttonLayout0]-|", @"H:|-[buttonLayout1]-|" ];
+
+    NSDictionary *viewMap;
+    if ([self appIsBeingTested]) {
+        viewMap =
+            NSDictionaryOfVariableBindings(_compositeFileBrowserView, buttonLayout0, buttonLayout1, retrievedInputsLayout, chatWindow);
+    } else {
+        viewMap =
+            NSDictionaryOfVariableBindings(_compositeFileBrowserView, buttonLayout0, buttonLayout1, chatWindow);
+    }
+
+    [ViewController applyConstraints:visualFormats variables:viewMap];
 
     ACOFeatureRegistration *featureReg = [ACOFeatureRegistration getInstance];
     [featureReg addFeature:@"acTest" featureVersion:@"1.0"];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(handleVoiceOverEvent:) name:UIAccessibilityElementFocusedNotification object:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -315,7 +262,16 @@ CGFloat kFileBrowserWidth = 0;
             [self reloadRowsAtChatWindowsWithIndexPaths:self.chatWindow.indexPathsForSelectedRows];
         }
         NSString *str = [NSString stringWithFormat:@"{\n%@\n}", [fetchedInputList componentsJoinedByString:@",\n"]];
-        [self presentViewController:[self createAlertController:@"user response fetched" message:str] animated:YES completion:nil];
+
+        // if the app is being tested we set the result in the uilabel, otherwise
+        // we show the label in a popup
+        if ([self appIsBeingTested]) {
+            NSString *str2 = [NSString stringWithFormat:@"{\n\t\"inputs\":%@\n}", [fetchedInputList componentsJoinedByString:@",\n"]];
+            [self.retrievedInputsTextView setText:str2];
+        } else {
+            [self presentViewController:[self createAlertController:@"user response fetched" message:str] animated:YES completion:nil];
+        }
+
     } else if (action.type == ACRUnknownAction) {
         if ([action isKindOfClass:[CustomActionNewType class]]) {
             CustomActionNewType *newType = (CustomActionNewType *)action;
@@ -325,7 +281,7 @@ CGFloat kFileBrowserWidth = 0;
     } else if (action.type == ACRToggleVisibility) {
         [self reloadRowsAtChatWindowsWithIndexPaths:self.chatWindow.indexPathsForSelectedRows];
     } else if (action.type == ACRShowCard) {
-        [self reloadRowsAtChatWindowsWithIndexPaths:self.chatWindow.indexPathsForSelectedRows];
+        [self reloadRowsAtChatWindowsWithIndexPaths:self.chatWindow.indexPathsForSelectedRows targetView:_targetView];
     }
 }
 
@@ -348,7 +304,7 @@ CGFloat kFileBrowserWidth = 0;
         UIView *focusedView = properties[ACRAggregateTargetFirstResponder];
         if (focusedView && [focusedView isKindOfClass:[UIView class]]) {
             [self.chatWindow setContentOffset:focusedView.frame.origin animated:YES];
-            [self reloadRowsAtChatWindowsWithIndexPaths:self.chatWindow.indexPathsForVisibleRows];
+            [self reloadRowsAtChatWindowsWithIndexPathsAfterValidation:self.chatWindow.indexPathsForVisibleRows];
         }
     } else {
         [self reloadRowsAtChatWindowsWithIndexPaths:self.chatWindow.indexPathsForVisibleRows];
@@ -357,6 +313,7 @@ CGFloat kFileBrowserWidth = 0;
 
 - (void)didChangeVisibility:(UIButton *)button isVisible:(BOOL)isVisible
 {
+    _targetView = button;
     if (isVisible) {
         button.backgroundColor = [UIColor redColor];
     } else {
@@ -379,6 +336,7 @@ CGFloat kFileBrowserWidth = 0;
 {
     [self addChildViewController:controller];
     [controller didMoveToParentViewController:self];
+    _mediaViewController = controller;
 }
 
 - (BOOL)shouldAllowMoreThanMaxActionsInOverflowMenu
@@ -412,6 +370,7 @@ CGFloat kFileBrowserWidth = 0;
 
 - (BOOL)onDisplayOverflowActionMenu:(NSArray<ACROverflowMenuItem *> *)menuItems
                     alertController:(UIAlertController *)alert
+                     additionalData:(NSDictionary *)additionalData
 {
     // [Option 1] the easiest way is to just present the alert view. It's prepared and presentable ready.
     //    [self presentViewController: alert];
@@ -443,6 +402,67 @@ CGFloat kFileBrowserWidth = 0;
                                               handler:nil]];
     [self presentViewController:myAlert animated:YES completion:nil];
     return YES; // skip SDK defult display
+}
+
+- (void)onChoiceSetQueryChange:(NSDictionary *)searchRequest acoElem:(ACOBaseCardElement *)elem completion:(void (^)(NSDictionary *response, NSError *error))completion
+{
+    NSString *queryString = [searchRequest valueForKey:@"value"];
+    NSMutableDictionary *responseDict = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *resultsArray = [[NSMutableDictionary alloc] init];
+    [responseDict setValue:resultsArray forKey:@"value"];
+    [responseDict setValue:@"application/vnd.microsoft.search.searchResponse" forKey:@"type"];
+
+    if (queryString != nil && [queryString length]) {
+        NSString *urlString = [NSString stringWithFormat:@"https://azuresearch-usnc.nuget.org/query?q=id:%@", queryString];
+        NSURL *url = [NSURL URLWithString:urlString];
+        NSData *data = [NSData dataWithContentsOfURL:url];
+        if (data != nil) {
+            NSDictionary *resultsDictionary = [NSJSONSerialization JSONObjectWithData:data
+                                                                              options:kNilOptions
+                                                                                error:nil];
+            NSArray *dataList = [resultsDictionary valueForKey:@"data"];
+            NSNumber *pageSize = [searchRequest valueForKey:@"top"];
+            for (int index = 0; index < [pageSize intValue] && index < [dataList count]; index++) {
+                id itemDict = [dataList objectAtIndex:index];
+                if ([itemDict isKindOfClass:NSDictionary.class]) {
+                    resultsArray[[itemDict objectForKey:@"id"]] = [itemDict objectForKey:@"description"];
+                }
+            }
+            [responseDict setValue:resultsArray forKey:@"value"];
+        } else {
+            [responseDict setValue:nil forKey:@"value"];
+            [responseDict setValue:@"application/vnd.microsoft.search.error" forKey:@"type"];
+        }
+    }
+    completion(responseDict, nil);
+}
+
+- (void)didUpdateTypeaheadSearchViewController:(UIViewController *)typeaheadSearchVC searchStateImageView:(UIImageView *)searchStateImageView searchViewState:(TSTypeaehadSearchViewState)searchViewState
+{
+    // modify the UI based on the search view state
+    switch (searchViewState) {
+        case zeroState:
+            searchStateImageView.image = [UIImage systemImageNamed:@"magnifyingglass"];
+            break;
+        case displayingGenericError:
+            searchStateImageView.image = [UIImage systemImageNamed:@"xmark.circle"];
+            break;
+        case displayingInvalidSearchError:
+            searchStateImageView.image = [UIImage systemImageNamed:@"xmark.circle"];
+            break;
+        default:
+            break;
+    }
+}
+
+- (BOOL)shouldLaunchTypeaheadSearchViewController:(UIViewController *)typeaheadSearchVC
+{
+    return YES; // continue SDK defult render;
+}
+
+- (BOOL)shouldConfigureNavigationItemViewWithVC:(UIViewController *)typeaheadSearchVC
+{
+    return YES; // continue SDK defult render;
 }
 
 - (UIView *)renderButtons:(ACRView *)rootView
@@ -490,27 +510,46 @@ CGFloat kFileBrowserWidth = 0;
     self.chatWindow.contentInset = contentInsets;
 }
 
-- (NSArray<UIStackView *> *)buildButtonsLayout:(NSLayoutAnchor *)centerXAnchor
+- (NSArray<UIStackView *> *)buildControlLayout:(NSLayoutAnchor *)centerXAnchor
 {
-    NSArray<UIStackView *> *layout = @[ [self configureButtons:centerXAnchor distribution:UIStackViewDistributionFillEqually],
-                                        [self configureButtons:centerXAnchor
-                                                  distribution:UIStackViewDistributionFill] ];
-
-    // try button
-    self.tryButton = [self buildButton:@"Edit" selector:@selector(editText:)];
-    [layout[0] addArrangedSubview:self.tryButton];
-
-    // apply button
-    self.applyButton = [self buildButton:@"Apply" selector:@selector(applyText:)];
-    [layout[0] addArrangedSubview:self.applyButton];
-
+    NSArray<UIStackView *> *layout = @[ [self configureStackView:centerXAnchor distribution:UIStackViewDistributionFillEqually],
+                                        [self configureStackView:centerXAnchor
+                                                    distribution:UIStackViewDistributionFill] ];
     // delete button
     self.deleteAllRowsButton = [self buildButton:@"Delete All Cards" selector:@selector(deleteAllRows:)];
-    [layout[1] addArrangedSubview:self.deleteAllRowsButton];
+    [layout[0] addArrangedSubview:self.deleteAllRowsButton];
 
-    // custon renderer button
-    self.enableCustomRendererButton = [self buildButton:@"Enable Custom Renderer" selector:@selector(toggleCustomRenderer:)];
-    [layout[1] addArrangedSubview:self.enableCustomRendererButton];
+    UIView *padding1 = [[UIView alloc] init];
+    [layout[1] addArrangedSubview:padding1];
+    // custom control switch
+    UILabel *customControlLabel = [[UILabel alloc] init];
+    customControlLabel.text = @"Enable Custom Control";
+    self.enableCustomRendererSwitch = [[UISwitch alloc] init];
+    [self.enableCustomRendererSwitch addTarget:self action:@selector(toggleCustomRenderer:) forControlEvents:UIControlEventValueChanged];
+
+    [layout[1] addArrangedSubview:customControlLabel];
+    [layout[1] addArrangedSubview:self.enableCustomRendererSwitch];
+
+    return layout;
+}
+
+- (UIStackView *)buildRetrievedResultsLayout:(NSLayoutAnchor *)centerXAnchor
+{
+    UIStackView *layout = [self configureStackView:centerXAnchor
+                                      distribution:UIStackViewDistributionFill];
+
+    if ([self appIsBeingTested]) {
+        // Set a background red color to signalize the app is in test mode
+        self.view.backgroundColor = [UIColor colorWithRed:1.0 green:0.80 blue:0.80 alpha:1];
+
+        // Initialize the input results label
+        self.retrievedInputsTextView = [self buildLabel:@"" withIdentifier:@"SubmitActionRetrievedResults"];
+
+        [self.retrievedInputsTextView setText:@" "];
+
+        // Add the label to the container
+        [layout addArrangedSubview:self.retrievedInputsTextView];
+    }
 
     return layout;
 }
@@ -537,7 +576,20 @@ CGFloat kFileBrowserWidth = 0;
     return button;
 }
 
-- (UIStackView *)configureButtons:(NSLayoutAnchor *)centerXAnchor distribution:(UIStackViewDistribution)distribution
+- (UILabel *)buildLabel:(NSString *)text withIdentifier:(NSString *)identifier
+{
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [label setText:text];
+    [label setTextColor:[UIColor blackColor]];
+    [label setBaselineAdjustment:UIBaselineAdjustmentAlignBaselines];
+    [label setLineBreakMode:NSLineBreakByCharWrapping];
+    [label setNumberOfLines:4];
+
+    [label setAccessibilityIdentifier:identifier];
+    return label;
+}
+
+- (UIStackView *)configureStackView:(NSLayoutAnchor *)centerXAnchor distribution:(UIStackViewDistribution)distribution
 {
     UIStackView *buttonLayout = [[UIStackView alloc] init];
     buttonLayout.axis = UILayoutConstraintAxisHorizontal;
@@ -563,12 +615,12 @@ CGFloat kFileBrowserWidth = 0;
     // adding the two tasks, rendering the card & handling the notification, to a task queue ensures
     // the syncronization.
     dispatch_async(_global_queue, ^{
-        self.editableStr = jsonStr;
         // the data source will parse & render the card, and update its store for AdaptiveCards
         [self->_dataSource insertCard:jsonStr];
         // tell the table view UI to add N rows.
         // The delta change might be > 1 since [_dataSource insertView] might have been called to
         // insert additional non-card views (such as overflow button)
+
         NSInteger lastRowIndex = [self.chatWindow numberOfRowsInSection:0];
         NSInteger postCount = [self->_dataSource tableView:self.chatWindow numberOfRowsInSection:0];
         NSInteger rowsToAdd = postCount - prevCount;
@@ -604,12 +656,85 @@ CGFloat kFileBrowserWidth = 0;
     [self reloadRowsAtChatWindowsWithIndexPaths:@[ indexPath ]];
 }
 
-- (void)reloadRowsAtChatWindowsWithIndexPaths:(NSArray<NSIndexPath *> *)indexPaths
+- (void)reloadRowsAtChatWindowsWithIndexPathsAfterValidation:(NSArray<NSIndexPath *> *)indexPaths
 {
     dispatch_async(_global_queue,
                    ^{
                        [self.chatWindow beginUpdates];
                        [self.chatWindow endUpdates];
                    });
+}
+
+- (void)reloadRowsAtChatWindowsWithIndexPaths:(NSArray<NSIndexPath *> *)indexPaths
+{
+    [self reloadRowsAtChatWindowsWithIndexPaths:indexPaths targetView:nil];
+}
+
+- (void)reloadRowsAtChatWindowsWithIndexPaths:(NSArray<NSIndexPath *> *)indexPaths targetView:(UIView *)targetView
+{
+    dispatch_async(_global_queue,
+                   ^{
+                       // This lines are required for updating the element tree after a
+                       // show card action has taken place, otherwise no previously hidden
+                       // element can be retrieved
+                       if ([self appIsBeingTested]) {
+                           [self.chatWindow beginUpdates];
+
+                           NSInteger lastRowIndex = [self->_dataSource tableView:self.chatWindow numberOfRowsInSection:0] - 1;
+                           NSIndexPath *pathToLastRow = [NSIndexPath indexPathForRow:lastRowIndex inSection:0];
+                           // reload the row; it is possible that the row height, for example, is calculated without images loaded
+                           [self.chatWindow reloadRowsAtIndexPaths:@[ pathToLastRow ] withRowAnimation:UITableViewRowAnimationNone];
+                           UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
+                           [self.chatWindow endUpdates];
+                       } else {
+                           // when table cell reload is complete, notify VO that layout has changed.
+                           [self.chatWindow
+                               performBatchUpdates:^(void) {
+                                   [self.chatWindow reloadData];
+                               }
+                               completion:^(BOOL finished) {
+                                   UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, targetView);
+                               }];
+                       }
+                   });
+}
+
+// Handle accessibility state change events
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
+{
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    if (!previousTraitCollection) {
+        return;
+    }
+
+    BOOL isAccessibilityCategory = UIContentSizeCategoryIsAccessibilityCategory(self.traitCollection.preferredContentSizeCategory);
+
+    if (isAccessibilityCategory != UIContentSizeCategoryIsAccessibilityCategory(previousTraitCollection.preferredContentSizeCategory)) {
+        if (_dataSource) {
+            // prep data sources for accessiblity changes, font size changes events
+            [_dataSource prepareForRedraw];
+            // ask for redraw of visible rows
+            [self.chatWindow reloadData];
+        }
+    }
+}
+
+- (BOOL)appIsBeingTested
+{
+    // Add this line for test recording: return YES;
+    NSArray *arguments = [[NSProcessInfo processInfo] arguments];
+    return [arguments containsObject:@"ui-testing"];
+}
+
+- (void)handleVoiceOverEvent:(NSNotification *)notificaiton
+{
+    UIAccessibilityElement *a11yElement = (UIAccessibilityElement *)notificaiton.userInfo[UIAccessibilityFocusedElementKey];
+    CGRect rect = UIAccessibilityConvertFrameToScreenCoordinates(self.chatWindow.frame, self.chatWindow);
+    if (a11yElement.accessibilityFrame.origin.y >= rect.origin.y) {
+        CGPoint point = CGPointMake(self.chatWindow.contentOffset.x, a11yElement.accessibilityFrame.origin.y - rect.origin.y);
+
+        [self.chatWindow setContentOffset:point animated:NO];
+    }
 }
 @end

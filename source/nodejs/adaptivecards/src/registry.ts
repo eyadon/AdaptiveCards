@@ -4,9 +4,9 @@ import { CardElement, Action } from "./card-elements";
 import { SerializableObject, Version, Versions } from "./serialization";
 
 export interface ITypeRegistration<T extends SerializableObject> {
-    typeName: string,
-    objectType: { new(): T },
-    schemaVersion: Version
+    typeName: string;
+    objectType: { new (): T };
+    schemaVersion: Version;
 }
 
 export class CardObjectRegistry<T extends SerializableObject> {
@@ -21,27 +21,34 @@ export class CardObjectRegistry<T extends SerializableObject> {
     }
 
     copyTo(target: CardObjectRegistry<T>) {
-        let keys = Object.keys(this._items);
+        const keys = Object.keys(this._items);
 
-        for (let key of keys) {
-            let typeRegistration = this._items[key];
+        for (const key of keys) {
+            const typeRegistration = this._items[key];
 
-            target.register(typeRegistration.typeName, typeRegistration.objectType, typeRegistration.schemaVersion);
+            target.register(
+                typeRegistration.typeName,
+                typeRegistration.objectType,
+                typeRegistration.schemaVersion
+            );
         }
     }
 
-    register(typeName: string, objectType: { new(): T }, schemaVersion: Version = Versions.v1_0) {
+    register(
+        typeName: string,
+        objectType: { new (): T },
+        schemaVersion: Version = Versions.v1_0
+    ) {
         let registrationInfo = this.findByName(typeName);
 
         if (registrationInfo !== undefined) {
             registrationInfo.objectType = objectType;
-        }
-        else {
+        } else {
             registrationInfo = {
                 typeName: typeName,
                 objectType: objectType,
                 schemaVersion: schemaVersion
-            }
+            };
         }
 
         this._items[typeName] = registrationInfo;
@@ -52,9 +59,11 @@ export class CardObjectRegistry<T extends SerializableObject> {
     }
 
     createInstance(typeName: string, targetVersion: Version): T | undefined {
-        let registrationInfo = this.findByName(typeName);
+        const registrationInfo = this.findByName(typeName);
 
-        return (registrationInfo && registrationInfo.schemaVersion.compareTo(targetVersion) <= 0) ? new registrationInfo.objectType() : undefined;
+        return registrationInfo && registrationInfo.schemaVersion.compareTo(targetVersion) <= 0
+            ? new registrationInfo.objectType()
+            : undefined;
     }
 
     getItemCount(): number {
@@ -62,10 +71,11 @@ export class CardObjectRegistry<T extends SerializableObject> {
     }
 
     getItemAt(index: number): ITypeRegistration<T> {
-        return Object.keys(this._items).map(e => this._items[e])[index];
+        return Object.keys(this._items).map((e) => this._items[e])[index];
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class GlobalRegistry {
     private static _elements?: CardObjectRegistry<CardElement>;
     private static _actions?: CardObjectRegistry<Action>;
@@ -84,7 +94,6 @@ export class GlobalRegistry {
 
     static readonly defaultElements = new CardObjectRegistry<CardElement>();
     static readonly defaultActions = new CardObjectRegistry<Action>();
-
     static get elements(): CardObjectRegistry<CardElement> {
         if (!GlobalRegistry._elements) {
             GlobalRegistry._elements = new CardObjectRegistry<CardElement>();
