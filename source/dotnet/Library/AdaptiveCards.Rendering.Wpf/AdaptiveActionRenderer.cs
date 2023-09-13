@@ -69,6 +69,7 @@ namespace AdaptiveCards.Rendering.Wpf
             {
                 Text = action.Title,
                 FontSize = context.Config.GetFontSize(AdaptiveFontType.Default, AdaptiveTextSize.Default),
+                VerticalAlignment = VerticalAlignment.Center,
                 Style = context.GetStyle($"Adaptive.Action.Title")
             };
 
@@ -92,7 +93,7 @@ namespace AdaptiveCards.Rendering.Wpf
                     //Size the image to the textblock, wait until layout is complete (loaded event)
                     uiIcon.Loaded += (sender, e) =>
                     {
-                        uiIcon.Height = uiTitle.ActualHeight;
+                        uiIcon.Height = Math.Min(uiTitle.ActualHeight, (double)actionsConfig.IconSize);
                     };
                 }
                 contentStackPanel.Children.Add(uiIcon);
@@ -115,7 +116,7 @@ namespace AdaptiveCards.Rendering.Wpf
             {
                 contentStackPanel.Children.Add(uiTitle);
             }
-            else
+            else if (!string.IsNullOrEmpty(action.Title))
             {
                 uiButton.ToolTip = uiTitle;
             }

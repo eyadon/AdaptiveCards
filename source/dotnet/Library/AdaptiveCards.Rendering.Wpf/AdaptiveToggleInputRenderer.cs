@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-using System.Net.Http.Headers;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;

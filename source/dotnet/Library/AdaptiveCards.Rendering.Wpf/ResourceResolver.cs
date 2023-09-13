@@ -4,8 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Net.Cache;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Resources;
@@ -18,21 +16,21 @@ namespace AdaptiveCards.Rendering.Wpf
 
         public ResourceResolver()
         {
-            Register("http", GetHttpAsync);
-            Register("https", GetHttpAsync);
+            //Register("http", GetHttpAsync);
+            //Register("https", GetHttpAsync);
             Register("pack", GetPackAsync);
             Register("data", GetDataUriAsync);
         }
 
-        private static async Task<MemoryStream> GetHttpAsync(Uri uri)
-        {
-            using (var webclient = new WebClient())
-            {
-                webclient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
-                var bytes = await webclient.DownloadDataTaskAsync(uri);
-                return new MemoryStream(bytes);
-            }
-        }
+        //private static async Task<MemoryStream> GetHttpAsync(Uri uri)
+        //{
+        //    using (var webclient = new WebClient())
+        //    {
+        //        webclient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
+        //        var bytes = await webclient.DownloadDataTaskAsync(uri);
+        //        return new MemoryStream(bytes);
+        //    }
+        //}
 
         /* Helper function to get stream from either Resource or Content */
         private static StreamResourceInfo GetResourceOrContentStream(Uri uri)
