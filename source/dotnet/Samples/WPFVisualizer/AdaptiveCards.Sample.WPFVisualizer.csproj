@@ -163,10 +163,6 @@
       <Project>{f36e1451-6a16-4e83-b7b3-90024bf36b4c}</Project>
       <Name>AdaptiveCards.Templating</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Library\AdaptiveCards\AdaptiveCards.csproj">
-      <Project>{fc4a3527-05a2-4297-98d3-cb1cb512ffda}</Project>
-      <Name>AdaptiveCards</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">

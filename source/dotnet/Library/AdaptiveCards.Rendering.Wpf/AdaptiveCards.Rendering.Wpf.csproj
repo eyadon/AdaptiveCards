@@ -2,21 +2,25 @@
 
   <PropertyGroup>
     <TargetFramework>net4.5.2</TargetFramework>
-    <Authors>Microsoft</Authors>
-    <Summary>Adaptive Card renderer for WPF</Summary>
+	  <Authors>Microsoft, ASE</Authors>
+	  <Summary>Adaptive Card renderer for WPF</Summary>
     <Description>This library implements classes for rendering Adaptive Cards into WPF controls</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>adaptivecards;adaptive-cards</PackageTags>
     <PackageProjectUrl>https://adaptivecards.io</PackageProjectUrl>
     <PackageIconUrl>https://adaptivecards.io/content/icons_blue/blue-48.png</PackageIconUrl>
-    <RepositoryUrl>https://github.com/Microsoft/AdaptiveCards</RepositoryUrl>
+    <RepositoryUrl>https://github.com/eyadon/AdaptiveCards</RepositoryUrl>
     <PackageLicenseFile>EULA-Windows.txt</PackageLicenseFile>
     <DefineConstants>WPF;$(DefineConstants);$(AdditionalConstants)</DefineConstants>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <GenerateAssemblyInfo Condition="$(Tfs_PackageVersionNumber) != ''">false</GenerateAssemblyInfo>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageId>ASE.AdaptiveCards.Rendering.Wpf</PackageId>
+    <Version>7.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AdaptiveCards" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
@@ -28,10 +32,6 @@
     <Page Include="Themes\generic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\AdaptiveCards\AdaptiveCards.csproj" />
   </ItemGroup>
 
   <ItemGroup>
