@@ -57,7 +57,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Library\AdaptiveCards.Rendering.Wpf\AdaptiveCards.Rendering.Wpf.csproj" />
-    <ProjectReference Include="..\..\Library\AdaptiveCards.Templating\AdaptiveCards.Templating.csproj" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
@@ -72,6 +71,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AdaptiveCards.Templating" Version="1.5.0" />
     <PackageReference Include="AvalonEdit">
       <Version>6.0.1</Version>
     </PackageReference>

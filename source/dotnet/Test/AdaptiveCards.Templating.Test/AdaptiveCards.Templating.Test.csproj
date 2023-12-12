@@ -16,9 +16,4 @@
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" NoWarn="NU1605" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Library\AdaptiveCards.Templating\AdaptiveCards.Templating.csproj" />
-    <ProjectReference Include="..\..\Library\AdaptiveCards\AdaptiveCards.csproj" />
-  </ItemGroup>
-
 </Project>
