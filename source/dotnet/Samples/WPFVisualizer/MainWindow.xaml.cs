@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Speech.Synthesis;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,7 +29,6 @@ namespace WpfVisualizer
     public partial class MainWindow : Window
     {
         private bool _dirty;
-        private readonly SpeechSynthesizer _synth;
         private DocumentLine _errorLine;
         private string templateData;
 
@@ -51,9 +49,6 @@ namespace WpfVisualizer
 
             CardPayload = File.ReadAllText("Samples\\ActivityUpdate.json");
 
-            _synth = new SpeechSynthesizer();
-            _synth.SelectVoiceByHints(VoiceGender.Female, VoiceAge.Adult);
-            _synth.SetOutputToDefaultAudioDevice();
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             timer.Tick += Timer_Tick;
             timer.Start();
@@ -375,12 +370,7 @@ namespace WpfVisualizer
         {
             var result = AdaptiveCard.FromJson(CardPayload);
             var card = result.Card;
-
-            _synth.SpeakAsyncCancelAll();
-            if (card.Speak != null)
-            {
-                _synth.SpeakSsmlAsync(FixSSML(card.Speak));
-            }
+            
         }
 
         private string FixSSML(string speak)

@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net4.5.2</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Authors>Microsoft</Authors>
     <Summary>Adaptive Card renderer for WPF with enhanced input controls provided by the Xceed WPF toolkit</Summary>
     <Description>This library implements classes for rendering Adaptive Cards into WPF controls</Description>
@@ -15,25 +14,21 @@
     <DefineConstants>WPF;$(DefineConstants);$(AdditionalConstants)</DefineConstants>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <GenerateAssemblyInfo Condition="$(Tfs_PackageVersionNumber) != ''">false</GenerateAssemblyInfo>
+	  <UseWPF>true</UseWPF>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="AdaptiveCards" Version="3.0.0" />
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.0.1" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="EULA-Windows.txt" Pack="true" PackagePath="\" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\AdaptiveCards.Rendering.Wpf\AdaptiveCards.Rendering.Wpf.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
-
 </Project>

@@ -291,7 +291,7 @@ namespace AdaptiveCards.Rendering.Wpf
 
         public void UseXceedElementRenderers()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void UseDefaultElementRenderers()
