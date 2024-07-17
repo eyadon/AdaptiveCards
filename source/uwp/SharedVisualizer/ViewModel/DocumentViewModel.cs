@@ -255,12 +255,15 @@ namespace AdaptiveCardVisualizer.ViewModel
 
             _renderer.OverflowMaxActions = true;
 
+            // Uncomment the line below to remove margins from selectAction. Default is `true`
+            //_renderer.AddSelectActionMargin = false;
+
             // Add a feature representing this version of the visualizer. used for test cards.
             _renderer.FeatureRegistration.Set("acTest", "1.0");
 
             if (Settings.UseFixedDimensions)
             {
-                _renderer.SetFixedDimensions(320, 180);
+                _renderer.SetFixedDimensions(320, 220);
             }
 
             // Custom resource resolvers

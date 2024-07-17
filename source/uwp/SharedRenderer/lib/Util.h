@@ -223,3 +223,20 @@ namespace AdaptiveCards::Rendering::Xaml_Rendering
 
     void RegisterDefaultActionRenderers(winrt::implementation::AdaptiveActionRendererRegistration* registration);
 }
+
+std::string ExtractSvgDataFromUri(winrt::Windows::Foundation::Uri const& imageUrl);
+
+winrt::Windows::Foundation::Size ParseSizeOfSVGImageFromXmlString(winrt::hstring const& content);
+
+winrt::IAsyncOperation<winrt::Windows::Foundation::Size> ParseSizeOfSVGImageFromStreamAsync(winrt::IRandomAccessStream const stream);
+
+bool IsSvgImage(winrt::Windows::Foundation::Uri const& imageUrl);
+
+auto inline GetDispatcher(winrt::ImageSource const& imageSource)
+{
+#ifdef USE_WINUI3
+    return imageSource.DispatcherQueue();
+#else
+    return imageSource.Dispatcher();
+#endif
+}

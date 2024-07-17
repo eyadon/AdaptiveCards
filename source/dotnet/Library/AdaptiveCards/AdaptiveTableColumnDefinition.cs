@@ -5,15 +5,14 @@ using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.ComponentModel;
+using System;
 
 namespace AdaptiveCards
 {
     /// <summary>
     /// Represents the backgroundImage property
     /// </summary>
-#if !NETSTANDARD1_3
     [XmlType(TypeName = AdaptiveTableColumnDefinition.TypeName)]
-#endif
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class AdaptiveTableColumnDefinition
     {
@@ -26,9 +25,7 @@ namespace AdaptiveCards
         /// The content alignment for the TableCells inside the TableRow.
         /// </summary>
         [JsonProperty("verticalCellContentAlignment", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-#if !NETSTANDARD1_3
         [XmlAttribute]
-#endif
         [DefaultValue(typeof(AdaptiveVerticalContentAlignment), "top")]
         public AdaptiveVerticalContentAlignment VerticalContentAlignment { get; set; }
 
@@ -36,49 +33,66 @@ namespace AdaptiveCards
         /// The content alignment for the TableCells inside the TableRow.
         /// </summary>
         [JsonProperty("horizontalCellContentAlignment", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-#if !NETSTANDARD1_3
         [XmlAttribute]
-#endif
         [DefaultValue(typeof(AdaptiveHorizontalContentAlignment), "left")]
         public AdaptiveHorizontalContentAlignment HorizontalContentAlignment { get; set; }
 
-        [JsonConverter(typeof(ColumnWidthConverter))]
+        [JsonConverter(typeof(TableColumnWidthConverter))]
         [JsonProperty("width", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-#if !NETSTANDARD1_3
         [XmlAttribute]
-#endif
         [DefaultValue(0)]
         private TableColumnWidth TableColumnWidth { get; set; } = new TableColumnWidth();
 
+        /// <summary>
+        /// Ths width in pixels
+        /// </summary>
         [JsonIgnore]
-        public double PixelWidth {
+        public double PixelWidth
+        {
             get { return TableColumnWidth.PixelWidth; }
-            set { TableColumnWidth.PixelWidth = value;}
+            set { TableColumnWidth.PixelWidth = value; }
         }
 
+        /// <summary>
+        /// Ths relative width as a weight
+        /// </summary>
         [JsonIgnore]
-        public long Width
+        public double Width
         {
             get { return TableColumnWidth.RelativeWidth; }
-            set { TableColumnWidth.RelativeWidth = value;}
+            set { TableColumnWidth.RelativeWidth = value; }
         }
     }
-    public class TableColumnWidth
+
+    internal class TableColumnWidth
     {
-        public TableColumnWidth()
+        private double _pixel;
+        private double _relative;
+
+        internal TableColumnWidth()
         {
         }
 
-        public TableColumnWidth(double pixelWidth)
+
+
+        internal double PixelWidth
         {
-            PixelWidth = pixelWidth;
-        }
-        public TableColumnWidth(long relativeWidth)
-        {
-            RelativeWidth = relativeWidth;
+            get => _pixel;
+            set
+            {
+                _pixel = value;
+                _relative = 0;
+            }
         }
 
-        public double PixelWidth { get; set; }
-        public long RelativeWidth { get; set; }
+        internal double RelativeWidth
+        {
+            get => _relative;
+            set
+            {
+                _relative = value;
+                _pixel = 0;
+            }
+        }
     }
 }

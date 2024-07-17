@@ -14,9 +14,7 @@ namespace AdaptiveCards
     ///     Adaptive card which has flexible container
     /// </summary>
     [JsonConverter(typeof(AdaptiveCardConverter))]
-#if !NETSTANDARD1_3
     [XmlRoot(ElementName = "Card")]
-#endif
     public class AdaptiveCard : AdaptiveTypedElement
     {
         /// <summary>
@@ -30,15 +28,13 @@ namespace AdaptiveCards
         public const string TypeName = "AdaptiveCard";
 
         /// <inheritdoc/>
-#if !NETSTANDARD1_3
         [XmlIgnore]
-#endif
         public override string Type { get; set; } = TypeName;
 
         /// <summary>
         /// The latest known schema version supported by this library.
         /// </summary>
-        public static AdaptiveSchemaVersion KnownSchemaVersion = new AdaptiveSchemaVersion(1, 5);
+        public static AdaptiveSchemaVersion KnownSchemaVersion = new AdaptiveSchemaVersion(1, 6);
 
         /// <summary>
         /// Creates an AdaptiveCard using a specific schema version.
@@ -64,9 +60,7 @@ namespace AdaptiveCards
         /// Schema version that this card requires. If a client is lower than this version the fallbackText will be rendered.
         /// </summary>
         [JsonProperty(Order = -10, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, NullValueHandling = NullValueHandling.Include)]
-#if !NETSTANDARD1_3
         [XmlElement]
-#endif
         [DefaultValue(null)]
         public AdaptiveSchemaVersion Version { get; set; }
 
@@ -81,9 +75,7 @@ namespace AdaptiveCards
         /// Text shown when the client doesn’t support the version specified. This can be in markdown format.
         /// </summary>
         [JsonProperty(Order = -8, NullValueHandling = NullValueHandling.Ignore)]
-#if !NETSTANDARD1_3
         [XmlAttribute]
-#endif
         [DefaultValue(null)]
         public string FallbackText { get; set; }
 
@@ -91,9 +83,7 @@ namespace AdaptiveCards
         /// Speak annotation for the card.
         /// </summary>
         [JsonProperty(Order = -7, NullValueHandling = NullValueHandling.Ignore)]
-#if !NETSTANDARD1_3
         [XmlElement]
-#endif
         [DefaultValue(null)]
         public string Speak { get; set; }
 
@@ -101,9 +91,7 @@ namespace AdaptiveCards
         /// The 2-letter ISO-639-1 language used in the card. Used to localize any date/time functions.
         /// </summary>
         [JsonProperty(Order = -7, NullValueHandling = NullValueHandling.Ignore)]
-#if !NETSTANDARD1_3
         [XmlAttribute]
-#endif
         [DefaultValue(null)]
         public string Lang { get; set; }
 
@@ -117,9 +105,7 @@ namespace AdaptiveCards
         /// <summary>
         /// Background image for card.
         /// </summary>
-#if !NETSTANDARD1_3
         [XmlElement]
-#endif
         [JsonProperty(Order = -5, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [JsonConverter(typeof(AdaptiveBackgroundImageConverter))]
         [DefaultValue(null)]
@@ -128,30 +114,31 @@ namespace AdaptiveCards
         /// <summary>
         /// Value that denotes if the card must use all the vertical space that is set to it. Default value is <see cref="AdaptiveHeightType.Auto"/>.
         /// </summary>
-        [JsonConverter(typeof(StringSizeWithUnitConverter), true)]
+        [JsonConverter(typeof(AdaptiveHeightConverter))]
         [JsonProperty(Order = -4, DefaultValueHandling = DefaultValueHandling.Ignore)]
-#if !NETSTANDARD1_3
         [XmlElement]
-#endif
         public AdaptiveHeight Height { get; set; } = new AdaptiveHeight(AdaptiveHeightType.Auto);
 
         /// <summary>
-        /// Explicit card minimum height in pixels.
+        /// Explicit card minimum height with 'px'. (100px, 200px)
         /// </summary>
-        [JsonConverter(typeof(StringSizeWithUnitConverter), false)]
         [JsonProperty("minHeight", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-#if !NETSTANDARD1_3
         [XmlAttribute]
-#endif
-        [DefaultValue(0)]
-        public uint PixelMinHeight { get; set; }
+        [DefaultValue(null)]
+        public string MinHeight { get; set; }
+
+        /// <summary>
+        /// PixelMinHeight if height is not auto/stretch
+        /// </summary>
+        [JsonIgnore]
+        [XmlIgnore]
+        public uint PixelMinHeight { get => uint.TryParse(MinHeight?.Replace("px", ""), out var val) ? (uint)val : 0; set => MinHeight = $"{value}px"; }
 
         /// <summary>
         /// The Body elements for this card.
         /// </summary>
         [JsonProperty(Order = -3)]
         [JsonConverter(typeof(IgnoreEmptyItemsConverter<AdaptiveElement>))]
-#if !NETSTANDARD1_3
         [XmlElement(typeof(AdaptiveTextBlock))]
         [XmlElement(typeof(AdaptiveRichTextBlock))]
         [XmlElement(typeof(AdaptiveImage))]
@@ -169,7 +156,6 @@ namespace AdaptiveCards
         [XmlElement(typeof(AdaptiveActionSet))]
         [XmlElement(typeof(AdaptiveTable))]
         [XmlElement(typeof(AdaptiveUnknownElement))]
-#endif
         public List<AdaptiveElement> Body { get; set; } = new List<AdaptiveElement>();
 
         /// <summary>
@@ -179,18 +165,38 @@ namespace AdaptiveCards
         public bool ShouldSerializeBody() => Body?.Count > 0;
 
         /// <summary>
+        /// Sets the text flow direction
+        /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [XmlIgnore]
+        [DefaultValue(null)]
+        public bool? Rtl { get; set; } = null;
+
+        /// <summary>
+        /// Controls XML serialization of style.
+        /// </summary>
+        // The XML serializer doesn't handle nullable value types. This allows serialization if non-null.
+        [JsonIgnore]
+        [XmlAttribute("Rtl")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public bool RtlXml { get { return (Rtl.HasValue) ? Rtl.Value : false; } set { Rtl = value; } }
+
+        /// <summary>
+        /// Determines whether to serialize the style for XML.
+        /// </summary>
+        public bool ShouldSerializeRtlXml() => this.Rtl.HasValue;
+
+        /// <summary>
         /// The Actions for this card.
         /// </summary>
         [JsonProperty(Order = -2)]
         [JsonConverter(typeof(IgnoreEmptyItemsConverter<AdaptiveAction>))]
-#if !NETSTANDARD1_3
         [XmlElement(typeof(AdaptiveOpenUrlAction))]
         [XmlElement(typeof(AdaptiveShowCardAction))]
         [XmlElement(typeof(AdaptiveSubmitAction))]
         [XmlElement(typeof(AdaptiveToggleVisibilityAction))]
         [XmlElement(typeof(AdaptiveExecuteAction))]
         [XmlElement(typeof(AdaptiveUnknownAction))]
-#endif
         public List<AdaptiveAction> Actions { get; set; } = new List<AdaptiveAction>();
 
         /// <summary>
@@ -203,9 +209,7 @@ namespace AdaptiveCards
         /// This makes sure the $schema property doesn't show up in AdditionalProperties
         /// </summary>
         [JsonProperty("$schema")]
-#if !NETSTANDARD1_3
         [XmlIgnore]
-#endif
         internal string JsonSchema { get; set; }
 
         /// <summary>
@@ -221,9 +225,7 @@ namespace AdaptiveCards
         /// The content alignment for the element inside the container.
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-#if !NETSTANDARD1_3
         [XmlElement]
-#endif
         [DefaultValue(typeof(AdaptiveVerticalContentAlignment), "top")]
         public AdaptiveVerticalContentAlignment VerticalContentAlignment { get; set; }
 
@@ -231,9 +233,7 @@ namespace AdaptiveCards
         /// Action for the card (this allows a default action at the card level)
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-#if !NETSTANDARD1_3
         [XmlElement]
-#endif
         [DefaultValue(null)]
         public AdaptiveAction SelectAction { get; set; }
 
@@ -241,9 +241,7 @@ namespace AdaptiveCards
         /// Defines how the card can be refreshed by making a request to the target Bot.
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-#if !NETSTANDARD1_3
         [XmlElement]
-#endif
         [DefaultValue(null)]
         public AdaptiveRefresh Refresh { get; set; }
 
@@ -251,11 +249,17 @@ namespace AdaptiveCards
         /// Defines authentication information to enable on-behalf-of single sign on or just-in-time OAuth.
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-#if !NETSTANDARD1_3
         [XmlElement]
-#endif
         [DefaultValue(null)]
         public AdaptiveAuthentication Authentication { get; set; }
+
+        /// <summary>
+        /// Defines various metadata properties typically not used for rendering the card
+        /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [XmlElement]
+        [DefaultValue(null)]
+        public AdaptiveMetadata Metadata { get; set; }
 
         /// <summary>
         /// Determines whether the height property of an AdaptiveCard should be serialized.

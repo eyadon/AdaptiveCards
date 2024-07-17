@@ -52,6 +52,45 @@ namespace AdaptiveCards
         }
 
         /// <summary>
+        /// Initializes an AdaptiveHeight instance with the given string "auto"|"stretch"|"100px"
+        /// </summary>
+        /// <param name="value">enumeration value or pixel .</param>
+        public AdaptiveHeight(string value)
+        {
+            HeightType = AdaptiveHeightType.Auto;
+            if (!String.IsNullOrEmpty(value))
+            {
+                if (value.EndsWith("px"))
+                {
+                    value = value.Substring(0, value.Length - 2);
+                    // NOTE: We want to throw exception here if this is not valid as the Converter then will generate a warning on the value.
+                    Unit = uint.Parse(value);
+                    HeightType = AdaptiveHeightType.Pixel;
+                }
+                else if (uint.TryParse(value, out var val))
+                {
+                    HeightType = AdaptiveHeightType.Pixel;
+                    Unit = val;
+                }
+                else
+                {
+                    // NOTE: We want to throw exception here if this is not valid as the Converter then will generate a warning on the value.
+                    HeightType = (AdaptiveHeightType)Enum.Parse(typeof(AdaptiveHeightType), value, ignoreCase: true);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Parse string to adaptive height
+        /// </summary>
+        /// <param name="value">string value</param>
+        /// <returns>AdaptiveHeight</returns>
+        public static AdaptiveHeight Parse(string value)
+        {
+            return new AdaptiveHeight(value);
+        }
+
+        /// <summary>
         /// Initializes an AdaptiveHeight instance with the given pixel size.
         /// </summary>
         /// <param name="px">The device-independent pixel size to use.</param>
@@ -75,21 +114,16 @@ namespace AdaptiveCards
         /// The <see cref="AdaptiveHeightType"/> this instance represents.
         /// </summary>
         [JsonProperty("heightType")]
-#if !NETSTANDARD1_3
         [XmlAttribute]
-#endif
         public AdaptiveHeightType HeightType { get; set; }
 
         /// <summary>
         /// The specific height to use (only valid for the <see cref="AdaptiveHeightType.Pixel"/> type).
         /// </summary>
         [JsonProperty("unit")]
-#if !NETSTANDARD1_3
         [XmlIgnore]
-#endif
         public uint? Unit { get; set; }
 
-#if !NETSTANDARD1_3
         /// <summary>
         /// Helper to aid in XML serialization of the <see cref="AdaptiveHeight.Unit"/> property.
         /// </summary>
@@ -101,7 +135,6 @@ namespace AdaptiveCards
         /// Determines whether to serialize the <see cref="AdaptiveHeight.UnitXml"/> property.
         /// </summary>
         public bool ShouldSerializeUnitXml() => Unit.HasValue;
-#endif
 
         /// <summary>
         /// Returns true if this <see cref="AdaptiveHeight"/> instance represents the <see
@@ -136,6 +169,33 @@ namespace AdaptiveCards
             return true;
         }
 
+        /// <summary>
+        /// Assignment operator with uint pixels
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator AdaptiveHeight(uint value)
+        {
+            return new AdaptiveHeight(value);
+        }
+
+        /// <summary>
+        /// Assignment operator with type
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator AdaptiveHeight(AdaptiveHeightType value)
+        {
+            return new AdaptiveHeight(value);
+        }
+
+        /// <summary>
+        /// Assignment operator with string (100x)
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator AdaptiveHeight(string value)
+        {
+            return new AdaptiveHeight(value);
+        }
+
         /// <inheritdoc />
         public static bool operator ==(AdaptiveHeight ah1, AdaptiveHeight ah2)
         {
@@ -167,15 +227,25 @@ namespace AdaptiveCards
         /// <inheritdoc />
         public Boolean Equals(AdaptiveHeight other)
         {
-            if (this.HeightType == other.HeightType)
+            if (this.HeightType == other?.HeightType)
             {
                 if (this.HeightType == AdaptiveHeightType.Pixel)
                 {
-                    return this.Unit == other.Unit;
+                    return this.Unit == other?.Unit;
                 }
                 return true;
             }
             return false;
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            if (HeightType == AdaptiveHeightType.Stretch)
+                return "stretch";
+            if (HeightType == AdaptiveHeightType.Auto)
+                return "auto";
+            return $"{Unit}px";
         }
     }
 }

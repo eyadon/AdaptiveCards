@@ -36,6 +36,11 @@ Json::Value ColumnSet::SerializeToJsonValue() const
         root[propertyName].append(column->SerializeToJsonValue());
     }
 
+    if (m_horizontalAlignment.has_value())
+    {
+        root[AdaptiveCardSchemaKeyToString(AdaptiveCardSchemaKey::HorizontalAlignment)] =
+            HorizontalAlignmentToString(m_horizontalAlignment.value_or(HorizontalAlignment::Left));
+    }
     return root;
 }
 
@@ -48,6 +53,47 @@ void ColumnSet::DeserializeChildren(ParseContext& context, const Json::Value& va
         AdaptiveCardSchemaKey::Columns,
         false,                                             // isRequired
         CardElementTypeToString(CardElementType::Column)); // impliedType
+
+    auto counts = 0;
+    std::shared_ptr<Column> cur = nullptr;
+
+    // If there is one column with numeric width,
+    // set it to stretch since the ratio requires at least two columns
+    // with numeric width.
+    for (auto const& column : m_columns)
+    {
+        const auto width {column->GetWidth()};
+        if (width.empty())
+        {
+            continue;
+        }
+        const auto ch = width.at(0);
+        if (column->GetPixelWidth() == 0 &&
+            (ch != 'a' && ch != 's') &&
+            // The check of the numeric width is purposely
+            // left at minimum. The stronger check should
+            // be placed at the column.
+             std::isdigit(ch))
+        {
+            counts++;
+            cur = column;
+        }
+    }
+
+    if (counts == 1 && cur)
+    {
+        cur->SetWidth("stretch");
+    }
+}
+
+std::optional<HorizontalAlignment> AdaptiveCards::ColumnSet::GetHorizontalAlignment() const
+{
+    return m_horizontalAlignment;
+}
+
+void AdaptiveCards::ColumnSet::SetHorizontalAlignment(std::optional<HorizontalAlignment> value)
+{
+    m_horizontalAlignment = value;
 }
 
 void ColumnSet::PopulateKnownPropertiesSet()
@@ -71,6 +117,9 @@ std::shared_ptr<BaseCardElement> ColumnSetParser::Deserialize(ParseContext& cont
     ParseUtil::ExpectTypeString(value, CardElementType::ColumnSet);
 
     auto container = StyledCollectionElement::Deserialize<ColumnSet>(context, value);
+
+    container->SetHorizontalAlignment(ParseUtil::GetOptionalEnumValue<HorizontalAlignment>(
+        value, AdaptiveCardSchemaKey::HorizontalAlignment, HorizontalAlignmentFromString));
 
     return container;
 }

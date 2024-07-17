@@ -23,8 +23,9 @@ import {
 import { GlobalRegistry } from "./registry";
 import { TypeErrorType, ValidationEvent } from "./enums";
 import { Strings } from "./strings";
+import Swiper from "swiper";
+import { SwiperOptions } from "swiper/types";
 import {
-    Swiper,
     A11y,
     Autoplay,
     History,
@@ -32,8 +33,7 @@ import {
     Navigation,
     Pagination,
     Scrollbar,
-    SwiperOptions
-} from "swiper";
+} from "swiper/modules";
 import * as Utils from "./utils";
 import { GlobalSettings } from "./shared";
 
@@ -357,10 +357,6 @@ export class Carousel extends Container {
         this._containerForAdorners = containerForAdorners;
 
         cardLevelContainer.appendChild(containerForAdorners);
-        
-        const navigationContainer: HTMLElement = document.createElement("div");
-        navigationContainer.className = this.hostConfig.makeCssClassName("ac-carousel-navigation");
-        containerForAdorners.appendChild(navigationContainer);
 
         const carouselWrapper: HTMLElement = document.createElement("div");
         carouselWrapper.className = this.hostConfig.makeCssClassName(
@@ -395,6 +391,9 @@ export class Carousel extends Container {
             // https://stackoverflow.com/questions/36247140/why-doesnt-flex-item-shrink-past-content-size
             carouselWrapper.style.minHeight = "-webkit-min-content";
         }
+
+        const navigationContainer: HTMLElement = document.createElement("div");
+        navigationContainer.className = this.hostConfig.makeCssClassName("ac-carousel-navigation");
 
         const prevElementDiv: HTMLElement = document.createElement("div");
         prevElementDiv.className = this.hostConfig.makeCssClassName(
@@ -461,6 +460,7 @@ export class Carousel extends Container {
         carouselContainer.tabIndex = this.isDesignMode() ? -1 : 0;
 
         containerForAdorners.appendChild(carouselContainer);
+        containerForAdorners.appendChild(navigationContainer);
 
         // `isRtl()` will set the correct value of rtl by reading the value from the parents
         this.rtl = this.isRtl();
@@ -547,7 +547,7 @@ export class Carousel extends Container {
         const prevElementAdjustedForOrientation = (Enums.Orientation.Horizontal === this.carouselOrientation) ? prevElementAdjustedForRtl : prevElement;
         const nextElementAdjustedForOrientation = (Enums.Orientation.Horizontal === this.carouselOrientation) ? nextElementAdjustedForRtl : nextElement;
 
-        const swiperOptions: SwiperOptions = {
+        const swiperOptions : SwiperOptions = {
             loop: !this.isDesignMode() && this.carouselLoop,
             modules: [Navigation, Pagination, Scrollbar, A11y, History, Keyboard],
             pagination: {
@@ -605,7 +605,7 @@ export class Carousel extends Container {
             this.raiseCarouselEvent(Enums.CarouselInteractionEvent.Autoplay);
         });
 
-        carousel.on('paginationRender', (swiper, paginationEl) => {
+        carousel.on('paginationRender', (swiper : Swiper) => {
             swiper.pagination.bullets.forEach((bullet, index) => {
                 bullet.addEventListener("keypress", function(event : KeyboardEvent) {
                     if (event.key == "Enter") {

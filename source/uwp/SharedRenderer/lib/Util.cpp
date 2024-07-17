@@ -5,6 +5,8 @@
 #include <regex>
 
 #include "AdaptiveActionSetRenderer.h"
+#include "AdaptiveCarouselRenderer.h"
+#include "AdaptiveCarouselPageRenderer.h"
 #include "AdaptiveColumnRenderer.h"
 #include "AdaptiveColumnSetRenderer.h"
 #include "AdaptiveContainerRenderer.h"
@@ -84,7 +86,7 @@ std::wstring StringToWString(std::string_view in)
 
 winrt::hstring UTF8ToHString(std::string_view in)
 {
-    return winrt::hstring{StringToWString(in)};
+    return winrt::hstring{ StringToWString(in) };
 }
 
 std::string HStringToUTF8(winrt::hstring const& in)
@@ -105,6 +107,19 @@ std::optional<double> TryHStringToDouble(winrt::hstring const& in)
     }
 }
 
+inline uint8_t GetColorChannelFromString(const std::string& colorString, const uint8_t defaultColorValue = 0x0)
+{
+    uint8_t colorValue;
+
+    auto [ptr, ec] = std::from_chars(colorString.data(), colorString.data() + colorString.size(), colorValue, 16);
+    if (ec == std::errc())
+    {
+        return colorValue;
+    }
+
+    return defaultColorValue;
+}
+
 // Get a Color object from color string
 // Expected formats are "#AARRGGBB" (with alpha channel) and "#RRGGBB" (without alpha channel)
 winrt::Windows::UI::Color GetColorFromString(const std::string& colorString)
@@ -112,53 +127,41 @@ winrt::Windows::UI::Color GetColorFromString(const std::string& colorString)
     winrt::Windows::UI::Color color{};
     if (colorString.length() > 0 && colorString.front() == '#')
     {
-        // Get the pure hex value (without #)
-        std::string hexColorString = colorString.substr(1, std::string::npos);
-
-        std::regex colorWithAlphaRegex("[0-9a-f]{8}", std::regex_constants::icase);
-        if (regex_match(hexColorString, colorWithAlphaRegex))
+        static const std::regex colorRegex("^#([0-9a-f]{2})?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$", std::regex_constants::icase);
+        enum ColorMatchGroup : size_t
         {
-            // If color string has alpha channel, extract and set to color
-            std::string alphaString = hexColorString.substr(0, 2);
+            Alpha = 1,
+            Red = 2,
+            Green = 3,
+            Blue = 4
+        };
 
-            auto alpha = strtol(alphaString.c_str(), nullptr, 16);
-
-            color.A = static_cast<uint8_t>(alpha);
-
-            hexColorString = hexColorString.substr(2, std::string::npos);
-        }
-        else
+        std::smatch colorMatch;
+        if (std::regex_match(colorString, colorMatch, colorRegex))
         {
-            // Otherwise, set full opacity
-            std::string alphaString = "FF";
-            auto alpha = strtol(alphaString.c_str(), nullptr, 16);
-            color.A = static_cast<uint8_t>(alpha);
-        }
+            constexpr uint8_t alphaDefault = 0xFF;
+            color.A = alphaDefault;
+            if (colorMatch[ColorMatchGroup::Alpha].matched)
+            {
+                // set alpha if we found it
+                color.A = GetColorChannelFromString(colorMatch[ColorMatchGroup::Alpha].str(), alphaDefault);
+            }
 
-        // A valid string at this point should have 6 hex characters (RRGGBB)
-        std::regex colorWithoutAlphaRegex("[0-9a-f]{6}", std::regex_constants::icase);
-        if (regex_match(hexColorString, colorWithoutAlphaRegex))
-        {
-            // Then set all other Red, Green, and Blue channels
-            std::string redString = hexColorString.substr(0, 2);
-            auto red = strtol(redString.c_str(), nullptr, 16);
+            // set RGB if we found them all
+            if (colorMatch[ColorMatchGroup::Red].matched && colorMatch[ColorMatchGroup::Green].matched &&
+                colorMatch[ColorMatchGroup::Blue].matched)
+            {
+                color.R = GetColorChannelFromString(colorMatch[ColorMatchGroup::Red].str());
+                color.G = GetColorChannelFromString(colorMatch[ColorMatchGroup::Green].str());
+                color.B = GetColorChannelFromString(colorMatch[ColorMatchGroup::Blue].str());
 
-            std::string greenString = hexColorString.substr(2, 2);
-            auto green = strtol(greenString.c_str(), nullptr, 16);
-
-            std::string blueString = hexColorString.substr(4, 2);
-            auto blue = strtol(blueString.c_str(), nullptr, 16);
-
-            color.R = static_cast<uint8_t>(red);
-            color.G = static_cast<uint8_t>(green);
-            color.B = static_cast<uint8_t>(blue);
-
-            return color;
+                return color;
+            }
         }
     }
 
     // All other formats are ignored (set alpha to 0)
-    color.A = static_cast<uint8_t>(0);
+    color.A = 0;
 
     return color;
 }
@@ -610,6 +613,8 @@ namespace AdaptiveCards::Rendering::Xaml_Rendering
                                          winrt::com_ptr<XamlBuilder> xamlBuilder)
     {
         registration->Set(L"ActionSet", winrt::make<winrt::implementation::AdaptiveActionSetRenderer>());
+        registration->Set(L"Carousel", winrt::make<winrt::implementation::AdaptiveCarouselRenderer>(xamlBuilder));
+        registration->Set(L"CarouselPage", winrt::make<winrt::implementation::AdaptiveCarouselPageRenderer>());
         registration->Set(L"Column", winrt::make<winrt::implementation::AdaptiveColumnRenderer>());
         registration->Set(L"ColumnSet", winrt::make<winrt::implementation::AdaptiveColumnSetRenderer>());
         registration->Set(L"Container", winrt::make<winrt::implementation::AdaptiveContainerRenderer>());
@@ -637,4 +642,86 @@ namespace AdaptiveCards::Rendering::Xaml_Rendering
                           winrt::make<winrt::implementation::AdaptiveToggleVisibilityActionRenderer>());
         registration->Set(L"Action.Execute", winrt::make<winrt::implementation::AdaptiveExecuteActionRenderer>());
     }
+}
+
+std::string ExtractSvgDataFromUri(winrt::Windows::Foundation::Uri const& imageUrl)
+{
+    winrt::Windows::Foundation::Uri uriObj(imageUrl);
+    winrt::hstring unescapedUri = uriObj.UnescapeComponent(uriObj.AbsoluteUri());
+    std::string dataUri = HStringToUTF8(unescapedUri);
+    size_t svgPosition = dataUri.find("<svg");
+    std::string data;
+    if (svgPosition != std::string::npos)
+    {
+        data = dataUri.substr(svgPosition);
+    }
+    return data;
+}
+
+winrt::Windows::Foundation::Size ParseSizeOfSVGImageFromXmlString(winrt::hstring const& content)
+{
+    // Parse the size from the XamlDocument as XML
+    winrt::XmlDocument xmlDoc;
+
+    xmlDoc.LoadXml(content);
+
+    if (xmlDoc)
+    {
+        auto rootElement = xmlDoc.DocumentElement();
+
+        // Root element must be an SVG
+        if (rootElement.NodeName() == L"svg")
+        {
+            auto heightAttribute = rootElement.GetAttribute(L"height");
+            auto widthAttribute = rootElement.GetAttribute(L"width");
+
+            double height{0.0};
+            double width{0.0};
+
+            if (!heightAttribute.empty())
+            {
+                height = TryHStringToDouble(heightAttribute).value_or(0.0);
+            }
+
+            if (!widthAttribute.empty())
+            {
+                width = TryHStringToDouble(widthAttribute).value_or(0.0);
+            }
+
+            return {static_cast<float>(width), static_cast<float>(height)};
+        }
+    }
+
+    return {};
+}
+
+winrt::IAsyncOperation<winrt::Windows::Foundation::Size> ParseSizeOfSVGImageFromStreamAsync(winrt::IRandomAccessStream const stream)
+{
+    auto inputStream = stream.GetInputStreamAt(0);
+    auto dataReader = winrt::DataReader(inputStream);
+
+    // Load the data from the stream
+    uint32_t numBytesLoaded = co_await dataReader.LoadAsync(static_cast<uint32_t>(stream.Size()));
+
+    // Read the data as a string
+    winrt::hstring svgString = dataReader.ReadString(numBytesLoaded);
+
+    co_return ParseSizeOfSVGImageFromXmlString(svgString);
+}
+
+bool IsSvgImage(winrt::Windows::Foundation::Uri const& imageUrl)
+{
+    auto imagePath = HStringToUTF8(imageUrl.Path());
+
+    if (imageUrl.SchemeName() == L"data")
+    {
+        // Find the position of the first semicolon
+        size_t semicolonPos = imagePath.find(';');
+
+        // Check if "svg" is present in the substring from the start to the semicolon
+        return imagePath.substr(0, semicolonPos).find("svg") != std::string::npos;
+    }
+
+	// Check if the file extension is ".svg"
+	return imagePath.substr(imagePath.find_last_of('.') + 1) == "svg";
 }
