@@ -70,7 +70,7 @@ namespace WpfVisualizer
             Renderer.FeatureRegistration.Set("acTest", "1.0");
 
             // Use the Xceed rich input controls
-            Renderer.UseXceedElementRenderers();
+            //Renderer.UseXceedElementRenderers();
             xceedCheckbox.IsChecked = true;
 
             // Register custom elements and actions
@@ -468,13 +468,13 @@ namespace WpfVisualizer
 
         private void XceedCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
-            Renderer.UseDefaultElementRenderers();
+            //Renderer.UseDefaultElementRenderers();
             _dirty = true;
         }
 
         private void XceedCheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            Renderer.UseXceedElementRenderers();
+            //Renderer.UseXceedElementRenderers();
             _dirty = true;
         }
 
