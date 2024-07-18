@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AdaptiveCards.Sample.MAUIVisualizer.MainPage">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="100"/>
+        </Grid.RowDefinitions>
+
+        <Editor Grid.Row="0" x:Name="textBox" TextChanged="textBox_TextChanged" HorizontalOptions="Fill" VerticalOptions="Fill"></Editor>
+        <Grid Grid.Row="1" x:Name="cardGrid" BackgroundColor="AntiqueWhite"></Grid>
+        <StackLayout Grid.Row="2" x:Name="cardError" BackgroundColor="Red" HorizontalOptions="Fill" MinimumHeightRequest="100"></StackLayout>
+        <StackLayout Grid.Row="3" x:Name="hostConfigerror" BackgroundColor="Orange" HorizontalOptions="Fill" MinimumHeightRequest="100"></StackLayout>
+    </Grid>
+</ContentPage>

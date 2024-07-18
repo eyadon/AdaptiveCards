@@ -73,7 +73,7 @@ namespace AdaptiveCards.Rendering.MAUI
             else if (args.Action is AdaptiveShowCardAction
                 && Config.Actions.ShowCard.ActionMode == ShowCardActionMode.Inline)
             {
-                ToggleShowCardVisibility((Button)ui);
+                ToggleShowCardVisibility((Frame)ui);
                 return;
             }
             else if (args.Action is AdaptiveSubmitAction)
@@ -167,7 +167,7 @@ namespace AdaptiveCards.Rendering.MAUI
         // This dictionary exists for setting the ids to elements without messing with the Name property to avoid crashes with weird ids
         internal IDictionary<string, View> RenderedElementsWithId = new Dictionary<string, View>();
 
-        public IDictionary<Button, View> ActionShowCards = new Dictionary<Button, View>();
+        public IDictionary<Frame, View> ActionShowCards = new Dictionary<Frame, View>();
 
         // contains showcard peers in actions set, and the AdaptiveInternalID is internal id of the actions set
         public IDictionary<AdaptiveInternalID, List<View>> PeerShowCardsInActionSet = new Dictionary<AdaptiveInternalID, List<View>>();
@@ -486,7 +486,7 @@ namespace AdaptiveCards.Rendering.MAUI
             }
         }
 
-        public void ToggleShowCardVisibility(Button uiAction)
+        public void ToggleShowCardVisibility(Frame uiAction)
         {
             View card = ActionShowCards[uiAction];
             var id = uiAction.GetContext() as AdaptiveInternalID;
