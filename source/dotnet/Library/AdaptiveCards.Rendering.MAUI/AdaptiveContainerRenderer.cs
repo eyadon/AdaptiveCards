@@ -134,7 +134,7 @@ namespace AdaptiveCards.Rendering.MAUI
 
                         tag = new TagContent(separator, uiContainer);
 
-                        //uiElement.Tag = tag;
+                        TagAttachedProperty.SetTag(uiElement, tag);
 
                         // Sets the minHeight property for Container and ColumnSet
                         if (cardElement.Type == "Container" || cardElement.Type == "ColumnSet")
@@ -168,7 +168,7 @@ namespace AdaptiveCards.Rendering.MAUI
                             tag.RowDefinition = rowDefinition;
                             tag.ViewIndex = rowDefinitionIndex;
 
-                            //enclosingElement.Tag = tag;
+                            TagAttachedProperty.SetTag(enclosingElement, tag);
 
                             if (!String.IsNullOrEmpty(cardElement.Id))
                             {
@@ -215,7 +215,7 @@ namespace AdaptiveCards.Rendering.MAUI
                                 {
                                     panel.Children.Add(uiElement);
                                 }
-                                //panel.Tag = tag;
+                                TagAttachedProperty.SetTag(panel, tag);
 
                                 Grid.SetRow(panel, rowDefinitionIndex);
                                 uiContainer.Children.Add(panel);

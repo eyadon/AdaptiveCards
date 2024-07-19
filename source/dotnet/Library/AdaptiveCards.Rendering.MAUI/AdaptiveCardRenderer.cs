@@ -105,15 +105,15 @@ namespace AdaptiveCards.Rendering.MAUI
                 _resources = value;
 
                 // Wrap this to avoid Console applications to crash because of this : https://github.com/Microsoft/AdaptiveCards/issues/2121
-                //try
-                //{
-                //    var resource = new ResourceDictionary
-                //    {
-                //        Source = new Uri("/AdaptiveCards.Rendering.Wpf;component/Themes/generic.xaml", UriKind.RelativeOrAbsolute)
-                //    };
-                //    _resources.MergedDictionaries.Add(resource);
-                //}
-                //catch { }
+                try
+                {
+                    var resource = new ResourceDictionary
+                    {
+                        Source = new Uri("/AdaptiveCards.Rendering.MAUI;component/Themes/generic.xaml", UriKind.RelativeOrAbsolute)
+                    };
+                    _resources.MergedDictionaries.Add(resource);
+                }
+                catch { }
 
             }
 

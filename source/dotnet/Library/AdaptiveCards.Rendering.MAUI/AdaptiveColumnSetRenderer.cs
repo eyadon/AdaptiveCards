@@ -131,7 +131,7 @@ namespace AdaptiveCards.Rendering.MAUI
 
                     uiColumnSet.ColumnDefinitions.Add(columnDefinition);
 
-                    //uiContainer.Tag = tag;
+                    TagAttachedProperty.SetTag(uiContainer, tag);
 
                     Grid.SetColumn(uiContainer, uiColumnSet.ColumnDefinitions.Count - 1);
                     uiColumnSet.Children.Add(uiContainer);

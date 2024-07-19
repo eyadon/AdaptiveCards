@@ -19,10 +19,10 @@ namespace AdaptiveCards.Sample.MAUIVisualizer
         {
             InitializeComponent();
 
-            var timer = new System.Timers.Timer(TimeSpan.FromSeconds(1));
-            timer.AutoReset = true;
-            timer.Elapsed += Timer_Tick;
-            timer.Start();
+            //var timer = new System.Timers.Timer(TimeSpan.FromSeconds(1));
+            //timer.AutoReset = true;
+            //timer.Elapsed += Timer_Tick;
+            //timer.Start();
 
             Renderer = new AdaptiveCardRenderer()
             {
@@ -444,6 +444,10 @@ namespace AdaptiveCards.Sample.MAUIVisualizer
         //}
 
 
+        private void ReloadButton_OnClicked(object? sender, EventArgs e)
+        {
+            RenderCard();
+        }
     }
 
 }

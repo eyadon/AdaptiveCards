@@ -24,7 +24,7 @@
 		<ApplicationTitle>AdaptiveCards.Sample.MAUIVisualizer</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.adaptivecards.sample.mauivisualizer</ApplicationId>
+		<ApplicationId>com.merc.adaptivecards.sample.mauivisualizer</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
