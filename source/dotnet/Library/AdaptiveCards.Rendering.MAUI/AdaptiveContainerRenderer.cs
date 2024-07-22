@@ -480,6 +480,7 @@ namespace AdaptiveCards.Rendering.MAUI
 
             Span labelTextInline = new Span() {Text = input.Label};
             labelTextInline.SetColor(labelConfig.Color, labelConfig.IsSubtle, context);
+            if (uiTextBlock.FormattedText == null) uiTextBlock.FormattedText = new FormattedString();
             uiTextBlock.FormattedText.Spans.Add(labelTextInline);
 
             if (input.IsRequired)
@@ -492,6 +493,7 @@ namespace AdaptiveCards.Rendering.MAUI
 
                 Span requiredHintInline = new Span() { Text = hintToRender };
                 requiredHintInline.SetColor(AdaptiveTextColor.Attention, labelConfig.IsSubtle, context);
+                if (uiTextBlock.FormattedText == null) uiTextBlock.FormattedText = new FormattedString();
                 uiTextBlock.FormattedText.Spans.Add(requiredHintInline);
             }
 

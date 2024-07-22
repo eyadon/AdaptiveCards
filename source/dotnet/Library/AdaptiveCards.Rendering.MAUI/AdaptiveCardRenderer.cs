@@ -31,7 +31,7 @@ namespace AdaptiveCards.Rendering.MAUI
             ElementRenderers.Set<AdaptiveTextBlock>(AdaptiveTextBlockRenderer.Render);
             //ElementRenderers.Set<AdaptiveRichTextBlock>(AdaptiveRichTextBlockRenderer.Render);
 
-            //ElementRenderers.Set<AdaptiveImage>(AdaptiveImageRenderer.Render);
+            ElementRenderers.Set<AdaptiveImage>(AdaptiveImageRenderer.Render);
             //We can fix this up if we ever need to use it...
             //ElementRenderers.Set<AdaptiveMedia>(AdaptiveMediaRenderer.Render);
 
@@ -279,7 +279,7 @@ namespace AdaptiveCards.Rendering.MAUI
         //}
 
 
-        public async Task<IDictionary<Uri, MemoryStream>> LoadAssetsForCardAsync(AdaptiveCard card, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IDictionary<Uri, Stream>> LoadAssetsForCardAsync(AdaptiveCard card, CancellationToken cancellationToken = default(CancellationToken))
         {
             var visitor = new PreFetchImageVisitor(ResourceResolvers);
             await visitor.GetAllImages(card).WithCancellation(cancellationToken).ConfigureAwait(false);

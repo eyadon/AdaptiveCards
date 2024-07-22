@@ -47,6 +47,7 @@ namespace AdaptiveCards.Rendering.MAUI
                     BindingContext = textBlock.MaxLines
                 };
 
+                if (uiTextBlock.FormattedText == null) uiTextBlock.FormattedText = new FormattedString();
                 measureBlock.FormattedText.Spans.Add(new Span() {Text = uiTextBlock.Text});
 
                 // bind the real textBlock's Height => MeasureBlock.ActualHeight

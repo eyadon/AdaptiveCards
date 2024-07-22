@@ -12,22 +12,29 @@
             <SolidColorBrush x:Key="Adaptive.Action.Positive.Button.MouseOver.Border" Color="#FF3C7FB1"/>
             <SolidColorBrush x:Key="Adaptive.Action.Positive.Button.Foreground" Color="#FFFFFFFF"/>
 
+            <SolidColorBrush x:Key="Adaptive.Action.Default.Button.Static.Background" Color="#FFDDDDDD"/>
+            <SolidColorBrush x:Key="Adaptive.Action.Default.Button.Static.Border" Color="#FF707070"/>
+            <SolidColorBrush x:Key="Adaptive.Action.Default.Button.MouseOver.Background" Color="#FFBEE6FD"/>
+            <SolidColorBrush x:Key="Adaptive.Action.Default.Button.MouseOver.Border" Color="#FF3C7FB1"/>
+            <SolidColorBrush x:Key="Adaptive.Action.Default.Button.Foreground" Color="#FFFFFFFF"/>
+
+
             <SolidColorBrush x:Key="Adaptive.Action.Destructive.Button.Static.Background" Color="#FFDDDDDD"/>
             <SolidColorBrush x:Key="Adaptive.Action.Destructive.Button.Static.Border" Color="#FF707070"/>
             <SolidColorBrush x:Key="Adaptive.Action.Destructive.Button.Foreground" Color="#FF838383"/>
             <SolidColorBrush x:Key="Adaptive.Action.Destructive.Button.MouseOver.Foreground" Color="#FF838383"/>
 
-            <Style x:Key="Adaptive.Input.Text.InlineAction.Button" TargetType="{x:Type Button}">
+            <Style x:Key="Adaptive.Input.Text.InlineAction.Button" TargetType="{x:Type Frame}">
                 <Setter Property="Background" Value="#FFFFFFFF"/>
                 <Setter Property="BorderColor" Value="#FFFFFFFF"/>
             </Style>
 
-            <Style x:Key="PositiveActionDefaultStyle" TargetType="{x:Type Button}">
+            <Style x:Key="PositiveActionDefaultStyle" TargetType="{x:Type Frame}">
                 <!--<Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>-->
                 <Setter Property="Background" Value="{DynamicResource Adaptive.Action.Positive.Button.Static.Background}"/>
                 <Setter Property="BorderColor" Value="{StaticResource Adaptive.Action.Positive.Button.Static.Border}"/>
-                <Setter Property="TextColor" Value="{DynamicResource Adaptive.Action.Positive.Button.Foreground}"/>
-                <Setter Property="BorderWidth" Value="1"/>
+                <!--<Setter Property="TextColor" Value="{DynamicResource Adaptive.Action.Positive.Button.Foreground}"/>-->
+                <!--<Setter Property="BorderWidth" Value="1"/>-->
                 <Setter Property="HorizontalOptions" Value="Center"/>
                 <Setter Property="VerticalOptions" Value="Center"/>
                 <Setter Property="Padding" Value="1"/>
@@ -60,12 +67,12 @@
                 </Setter>-->
             </Style>
 
-            <Style x:Key="DestructiveActionDefaultStyle" TargetType="{x:Type Button}">
+            <Style x:Key="DestructiveActionDefaultStyle" TargetType="{x:Type Frame}">
                 <!--<Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>-->
                 <Setter Property="Background" Value="{StaticResource Adaptive.Action.Destructive.Button.Static.Background}"/>
                 <Setter Property="BorderColor" Value="{StaticResource Adaptive.Action.Destructive.Button.Static.Border}"/>
-                <Setter Property="TextColor" Value="{DynamicResource Adaptive.Action.Destructive.Button.Foreground}"/>
-                <Setter Property="BorderWidth" Value="1"/>
+                <!--<Setter Property="TextColor" Value="{DynamicResource Adaptive.Action.Destructive.Button.Foreground}"/>-->
+                <!--<Setter Property="BorderWidth" Value="1"/>-->
                 <Setter Property="HorizontalOptions" Value="Center"/>
                 <Setter Property="VerticalOptions" Value="Center"/>
                 <Setter Property="Padding" Value="1"/>

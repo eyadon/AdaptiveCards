@@ -5,7 +5,7 @@ namespace AdaptiveCards.Rendering.MAUI
 {
     public class ResourceResolver
     {
-        private readonly Dictionary<string, Func<Uri, Task<MemoryStream>>> _internalResolver = new Dictionary<string, Func<Uri, Task<MemoryStream>>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Func<Uri, Task<Stream>>> _internalResolver = new Dictionary<string, Func<Uri, Task<Stream>>>(StringComparer.OrdinalIgnoreCase);
 
         public ResourceResolver()
         {
@@ -57,7 +57,7 @@ namespace AdaptiveCards.Rendering.MAUI
         //    }
         //}
 
-        private static Task<MemoryStream> GetDataUriAsync(Uri uri)
+        private static Task<Stream> GetDataUriAsync(Uri uri)
         {
             try
             {
@@ -66,15 +66,15 @@ namespace AdaptiveCards.Rendering.MAUI
                 var decodedDataUri = Convert.FromBase64String(encodedData);
                 var memoryStream = new MemoryStream(decodedDataUri);
 
-                return Task.FromResult(memoryStream);
+                return Task.FromResult(memoryStream as Stream);
             }
             catch (Exception)
             {
-                return Task.FromResult<MemoryStream>(null);
+                return Task.FromResult<Stream>(null);
             }
         }
 
-        public void Register(string uriScheme, Func<Uri, Task<MemoryStream>> loadAsset)
+        public void Register(string uriScheme, Func<Uri, Task<Stream>> loadAsset)
         {
             _internalResolver[uriScheme] = loadAsset;
         }
@@ -89,7 +89,7 @@ namespace AdaptiveCards.Rendering.MAUI
             _internalResolver.Remove(uriScheme);
         }
 
-        public Task<MemoryStream> LoadAssetAsync(Uri uri)
+        public Task<Stream> LoadAssetAsync(Uri uri)
         {
             if (uri == null) throw new ArgumentNullException(nameof(uri));
 
@@ -97,7 +97,7 @@ namespace AdaptiveCards.Rendering.MAUI
                 return func(uri);
 
             // TODO: Context warning, no asset resolver for URI scheme
-            return Task.FromResult<MemoryStream>(null);
+            return Task.FromResult<Stream>(null);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace AdaptiveCards.Rendering.MAUI
         private readonly ResourceResolver _resourceResolver;
         private readonly List<Task> _tasks = new List<Task>();
 
-        public ConcurrentDictionary<Uri, MemoryStream> LoadedImages { get; } = new ConcurrentDictionary<Uri, MemoryStream>();
+        public ConcurrentDictionary<Uri, Stream> LoadedImages { get; } = new ConcurrentDictionary<Uri, Stream>();
 
         public PreFetchImageVisitor(ResourceResolver resourceResolver)
         {
@@ -30,7 +30,7 @@ namespace AdaptiveCards.Rendering.MAUI
             await Task.WhenAll(_tasks.ToArray()).ConfigureAwait(false);
         }
 
-        public MemoryStream GetCachedImageStream(Uri url)
+        public Stream GetCachedImageStream(Uri url)
         {
             if (LoadedImages.TryGetValue(url, out var stream))
             {

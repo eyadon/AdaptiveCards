@@ -49,7 +49,7 @@ namespace AdaptiveCards.Rendering.MAUI
 
         public bool? Rtl { get; set; }
 
-        public IDictionary<Uri, MemoryStream> CardAssets { get; set; } = new Dictionary<Uri, MemoryStream>();
+        public IDictionary<Uri, Stream> CardAssets { get; set; } = new Dictionary<Uri, Stream>();
 
         public IDictionary<string, Func<string>> InputBindings = new Dictionary<string, Func<string>>();
 
@@ -117,40 +117,41 @@ namespace AdaptiveCards.Rendering.MAUI
         /// <summary>
         /// All remote assets should be resolved through this method for tracking
         /// </summary>
-        //public async Task<BitmapImage> ResolveImageSource(Uri url)
-        //{
-        //    var completeTask = new TaskCompletionSource<object>();
-        //    AssetTasks.Add(completeTask.Task);
+        public async Task<ImageSource> ResolveImageSource(Uri url)
+        {
+            var completeTask = new TaskCompletionSource<object>();
+            AssetTasks.Add(completeTask.Task);
 
-        //    try
-        //    {
-        //        // Load the stream from the pre-populated CardAssets or try to load from the ResourceResolver
-        //        var streamTask = CardAssets.TryGetValue(url, out var s) ? Task.FromResult(s) : ResourceResolvers.LoadAssetAsync(url);
+            try
+            {
+                // Load the stream from the pre-populated CardAssets or try to load from the ResourceResolver
+                var streamTask = CardAssets.TryGetValue(url, out var s) ? Task.FromResult(s) : ResourceResolvers.LoadAssetAsync(url);
 
-        //        Debug.WriteLine($"ASSETS: Starting asset down task for {url}");
+                Debug.WriteLine($"ASSETS: Starting asset down task for {url}");
 
-        //        var source = new BitmapImage();
+                var source = new StreamImageSource();
+                source.Stream = token => streamTask;
 
-        //        var stream = await streamTask;
-        //        if (stream != null)
-        //        {
-        //            stream.Position = 0;
-        //            source.BeginInit();
-        //            source.CacheOption = BitmapCacheOption.OnLoad;
-        //            source.StreamSource = stream;
-        //            source.EndInit();
-        //            Debug.WriteLine($"ASSETS: Finished loading asset for {url} ({stream.Length} bytes)");
-        //        }
-        //        completeTask.SetResult(new object());
-        //        return source;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Debug.WriteLine($"ASSETS: Failed to load asset for {url}. {e.Message}");
-        //        completeTask.SetException(e);
-        //        return null;
-        //    }
-        //}
+                var stream = await streamTask;
+                if (stream != null)
+                {
+                    stream.Position = 0;
+                    //source.BeginInit();
+                    //source.CacheOption = BitmapCacheOption.OnLoad;
+                    //source.StreamSource = stream;
+                    //source.EndInit();
+                    Debug.WriteLine($"ASSETS: Finished loading asset for {url} ({stream.Length} bytes)");
+                }
+                completeTask.SetResult(new object());
+                return source;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"ASSETS: Failed to load asset for {url}. {e.Message}");
+                completeTask.SetException(e);
+                return null;
+            }
+        }
 
         public SolidColorBrush GetColorBrush(string color)
         {
