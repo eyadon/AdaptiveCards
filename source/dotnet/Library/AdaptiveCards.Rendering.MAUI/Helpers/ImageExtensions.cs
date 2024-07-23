@@ -2,6 +2,9 @@
 // Licensed under the MIT License.
 
 using System.Globalization;
+using ImageSource = Microsoft.Maui.Controls.ImageSource;
+using Rect = Microsoft.Maui.Graphics.Rect;
+using Stretch = Microsoft.Maui.Controls.Stretch;
 
 namespace AdaptiveCards.Rendering.MAUI.Helpers
 {
@@ -120,63 +123,64 @@ namespace AdaptiveCards.Rendering.MAUI.Helpers
         //    return bitmap;
         //}
 
-        //public static async void SetBackgroundSource(this Grid grid, AdaptiveBackgroundImage adaptiveBackgroundImage, AdaptiveRenderContext context)
-        //{
-        //    // Try to resolve the image URI
-        //    Uri finalUri = context.Config.ResolveFinalAbsoluteUri(adaptiveBackgroundImage?.Url);
-        //    if (finalUri == null)
-        //    {
-        //        return;
-        //    }
+        public static async void SetBackgroundSource(this Grid grid, AdaptiveBackgroundImage adaptiveBackgroundImage, AdaptiveRenderContext context)
+        {
+            // Try to resolve the image URI
+            Uri finalUri = context.Config.ResolveFinalAbsoluteUri(adaptiveBackgroundImage?.Url);
+            if (finalUri == null)
+            {
+                return;
+            }
 
-        //    BitmapImage bi = await context.ResolveImageSource(finalUri);
+            ImageSource bi = await context.ResolveImageSource(finalUri);
 
-        //    if (bi != null)
-        //    {
-        //        // bi.Pixel{Width, Height}: dimensions of image
-        //        // grid.Actual{Width, Height}: dimensions of grid containing background image
-        //        switch (adaptiveBackgroundImage.FillMode)
-        //        {
-        //            case AdaptiveImageFillMode.Repeat:
-        //                grid.Background = new ImageBrush(bi)
-        //                {
-        //                    TileMode = TileMode.Tile,
-        //                    Viewport = new Rect(0, 0, bi.PixelWidth, bi.PixelHeight),
-        //                    ViewportUnits = BrushMappingMode.Absolute
-        //                };
-        //                break;
-        //            case AdaptiveImageFillMode.RepeatHorizontally:
-        //                grid.Background = new ImageBrush(bi)
-        //                {
-        //                    TileMode = TileMode.FlipY,
-        //                    Stretch = Stretch.Uniform,
-        //                    AlignmentY = (AlignmentY)adaptiveBackgroundImage.VerticalAlignment,
-        //                    Viewport = new Rect(0, 0, bi.PixelWidth, grid.ActualHeight + 1),
-        //                    ViewportUnits = BrushMappingMode.Absolute
-        //                };
-        //                break;
-        //            case AdaptiveImageFillMode.RepeatVertically:
-        //                grid.Background = new ImageBrush(bi)
-        //                {
-        //                    TileMode = TileMode.FlipX,
-        //                    Stretch = Stretch.Uniform,
-        //                    AlignmentX = (AlignmentX)adaptiveBackgroundImage.HorizontalAlignment,
-        //                    Viewport = new Rect(0, 0, grid.ActualWidth + 1, bi.PixelWidth),
-        //                    ViewportUnits = BrushMappingMode.Absolute
-        //                };
-        //                break;
-        //            case AdaptiveImageFillMode.Cover:
-        //            default:
-        //                grid.Background = new ImageBrush(bi)
-        //                {
-        //                    Stretch = Stretch.UniformToFill,
-        //                    AlignmentY = (AlignmentY)adaptiveBackgroundImage.VerticalAlignment,
-        //                    AlignmentX = (AlignmentX)adaptiveBackgroundImage.HorizontalAlignment
-        //                };
-        //                break;
-        //        }
-        //    }
-        //}
+            if (bi != null)
+            {
+                // bi.Pixel{Width, Height}: dimensions of image
+                // grid.Actual{Width, Height}: dimensions of grid containing background image
+                switch (adaptiveBackgroundImage.FillMode)
+                {
+                    case AdaptiveImageFillMode.Repeat:
+                        //grid.Background = new ImageBrush(bi)
+                        //{
+                        //    TileMode = Shader.TileMode.Tile,
+                        //    Viewport = new Rect(0, 0, bi.PixelWidth, bi.PixelHeight),
+                        //    ViewportUnits = BrushMappingMode.Absolute
+                        //};
+                        //break;
+                    case AdaptiveImageFillMode.RepeatHorizontally:
+                        //grid.Background = new ImageBrush(bi)
+                        //{
+                        //    TileMode = Shader.TileMode.FlipY,
+                        //    Stretch = Stretch.Uniform,
+                        //    AlignmentY = (AlignmentY)adaptiveBackgroundImage.VerticalAlignment,
+                        //    Viewport = new Rect(0, 0, bi.PixelWidth, grid.ActualHeight + 1),
+                        //    ViewportUnits = BrushMappingMode.Absolute
+                        //};
+                        //break;
+                    case AdaptiveImageFillMode.RepeatVertically:
+                        //grid.Background = new ImageBrush(bi)
+                        //{
+                        //    TileMode = Shader.TileMode.FlipX,
+                        //    Stretch = Stretch.Uniform,
+                        //    AlignmentX = (AlignmentX)adaptiveBackgroundImage.HorizontalAlignment,
+                        //    Viewport = new Rect(0, 0, grid.ActualWidth + 1, bi.PixelWidth),
+                        //    ViewportUnits = BrushMappingMode.Absolute
+                        //};
+                        //break;
+                    case AdaptiveImageFillMode.Cover:
+                    default:
+                        //grid.Children.Add(new Image());// = new ImageBrush(bi)
+                        //{
+                        //    Stretch = Stretch.UniformToFill,
+                        //    AlignmentY = (AlignmentY)adaptiveBackgroundImage.VerticalAlignment,
+                        //    AlignmentX = (AlignmentX)adaptiveBackgroundImage.HorizontalAlignment
+                        //};
+                        throw new NotImplementedException("background image not supported yet");
+                        break;
+                }
+            }
+        }
 
         public static void SetImageProperties(this Image imageview, AdaptiveImage image, AdaptiveRenderContext context)
         {

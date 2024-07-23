@@ -112,7 +112,7 @@ namespace AdaptiveCards.Rendering.MAUI
                 };
 
                 View uiIcon = null;
-                //TODO IMG uiIcon = AdaptiveImageRenderer.Render(image, context);
+                uiIcon = AdaptiveImageRenderer.Render(image, context);
                 uiButton.Content = uiIcon;
 
                 // adjust height

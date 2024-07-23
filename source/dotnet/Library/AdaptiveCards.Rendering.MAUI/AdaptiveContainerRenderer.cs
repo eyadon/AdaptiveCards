@@ -11,7 +11,7 @@ namespace AdaptiveCards.Rendering.MAUI
         {
             var uiContainer = new Grid();
             uiContainer.Style = context.GetStyle("Adaptive.Container");
-            //TODO IMG uiContainer.SetBackgroundSource(container.BackgroundImage, context);
+            uiContainer.SetBackgroundSource(container.BackgroundImage, context);
 
             bool? previousContextRtl = context.Rtl;
             bool? currentRtl = previousContextRtl;

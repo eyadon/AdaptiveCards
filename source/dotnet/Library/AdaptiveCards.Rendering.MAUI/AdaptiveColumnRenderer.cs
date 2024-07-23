@@ -11,7 +11,7 @@ namespace AdaptiveCards.Rendering.MAUI
         {
             var uiContainer = new Grid();
             uiContainer.Style = context.GetStyle("Adaptive.Column");
-            //TODO IMG uiContainer.SetBackgroundSource(column.BackgroundImage, context);
+            uiContainer.SetBackgroundSource(column.BackgroundImage, context);
 
             bool? previousContextRtl = context.Rtl;
             bool? currentRtl = previousContextRtl;

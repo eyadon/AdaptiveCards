@@ -336,7 +336,8 @@ namespace AdaptiveCards.Rendering.MAUI
                 string values = string.Empty;
                 foreach (var item in uiChoices.Children)
                 {
-                    CheckBox checkBox = (CheckBox)item;
+                    //item is horizontal stack layout [checkbox][label]
+                    CheckBox checkBox = (CheckBox)((HorizontalStackLayout)item).Children[0];
                     AdaptiveChoice adaptiveChoice = checkBox.BindingContext as AdaptiveChoice;
                     if (checkBox.IsChecked == true)
                         values += (values == string.Empty ? "" : ",") + adaptiveChoice.Value;
@@ -364,7 +365,8 @@ namespace AdaptiveCards.Rendering.MAUI
 
                     foreach (var item in uiChoices.Children)
                     {
-                        RadioButton radioBox = (RadioButton)item;
+                        //item is a horizontalStackLayout [button][label]
+                        RadioButton radioBox = (RadioButton)((HorizontalStackLayout)item).Children[0];
                         AdaptiveChoice adaptiveChoice = radioBox.BindingContext as AdaptiveChoice;
                         if (radioBox.IsChecked == true)
                             return adaptiveChoice.Value;

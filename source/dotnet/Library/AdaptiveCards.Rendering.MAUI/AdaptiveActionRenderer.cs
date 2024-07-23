@@ -82,7 +82,7 @@ namespace AdaptiveCards.Rendering.MAUI
                 {
                     HorizontalAlignment = AdaptiveHorizontalAlignment.Center
                 };
-                //TODO IMG uiIcon = AdaptiveImageRenderer.Render(image, context);
+                uiIcon = AdaptiveImageRenderer.Render(image, context);
 
                 if (actionsConfig.IconPlacement == IconPlacement.AboveTitle)
                 {

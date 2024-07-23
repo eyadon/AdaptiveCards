@@ -129,7 +129,7 @@ namespace AdaptiveCards.Rendering.MAUI
             outerGrid.Style = context.GetStyle("Adaptive.Card");
 
             outerGrid.Background = context.GetColorBrush(context.Config.ContainerStyles.Default.BackgroundColor);
-            //TODO IMG outerGrid.SetBackgroundSource(card.BackgroundImage, context);
+            outerGrid.SetBackgroundSource(card.BackgroundImage, context);
 
             if(context.CardRoot == null)
             {
