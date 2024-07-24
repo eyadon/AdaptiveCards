@@ -88,7 +88,7 @@ namespace AdaptiveCards.Rendering.MAUI
             Grid.SetColumn(uiSep, 1);
 
             // adding button
-            var uiButton = new Frame();
+            var uiButton = new Button();
             Style style = context.GetStyle($"Adaptive.Input.Text.InlineAction.Button");
             if (style != null)
             {
@@ -96,38 +96,38 @@ namespace AdaptiveCards.Rendering.MAUI
             }
 
             // this textblock becomes tooltip if icon url exists else becomes the tile for the button
-            var uiTitle = new Label
-            {
-                Text = input.InlineAction.Title,
-            };
+            //var uiTitle = new Label
+            //{
+            //    Text = input.InlineAction.Title,
+            //};
 
             if (input.InlineAction.IconUrl != null)
             {
-                var actionsConfig = context.Config.Actions;
+                //var actionsConfig = context.Config.Actions;
 
-                var image = new AdaptiveImage(input.InlineAction.IconUrl)
-                {
-                    HorizontalAlignment = AdaptiveHorizontalAlignment.Center,
-                    Type = "Adaptive.Input.Text.InlineAction.Image",
-                };
+                //var image = new AdaptiveImage(input.InlineAction.IconUrl)
+                //{
+                //    HorizontalAlignment = AdaptiveHorizontalAlignment.Center,
+                //    Type = "Adaptive.Input.Text.InlineAction.Image",
+                //};
 
-                View uiIcon = null;
-                uiIcon = AdaptiveImageRenderer.Render(image, context);
-                uiButton.Content = uiIcon;
+                //View uiIcon = null;
+                //uiIcon = AdaptiveImageRenderer.Render(image, context);
+                uiButton.SetSource(input.InlineAction, context);
 
                 // adjust height
-                textBox.Loaded += (sender, e) =>
-                {
-                    uiIcon.HeightRequest = textBox.Height;
-                };
+                //textBox.Loaded += (sender, e) =>
+                //{
+                //    uiIcon.HeightRequest = textBox.Height;
+                //};
 
                 //uiButton.ToolTip = uiTitle;
             }
             else
             {
-                uiTitle.FontSize = context.Config.GetFontSize(AdaptiveFontType.Default, AdaptiveTextSize.Default);
-                uiTitle.Style = context.GetStyle($"Adaptive.Input.Text.InlineAction.Title");
-                uiButton.Content = uiTitle;
+                //uiTitle.FontSize = context.Config.GetFontSize(AdaptiveFontType.Default, AdaptiveTextSize.Default);
+                //uiTitle.Style = context.GetStyle($"Adaptive.Input.Text.InlineAction.Title");
+                uiButton.Text = input.InlineAction.Title;
             }
 
             if (input.InlineAction is AdaptiveSubmitAction ||

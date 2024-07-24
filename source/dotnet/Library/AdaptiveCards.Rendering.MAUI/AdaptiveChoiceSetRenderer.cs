@@ -19,7 +19,10 @@ namespace AdaptiveCards.Rendering.MAUI
 
             uiComboBox.Style = context.GetStyle("Adaptive.Input.AdaptiveChoiceSetInput.ComboBox");
             uiComboBox.BindingContext = input;
-
+            uiComboBox.Title = input.Placeholder;
+            var dropdownItems = new List<AdaptiveChoice>();
+            uiComboBox.ItemDisplayBinding = new Binding("Title");
+            
             uiChoices.BindingContext = input;
             uiChoices.Style = context.GetStyle("Adaptive.Input.AdaptiveChoiceSetInput");
 
@@ -57,13 +60,12 @@ namespace AdaptiveCards.Rendering.MAUI
 
                         //uiComboItem.BindingContext = choice;
                         
-                        uiComboBox.Items.Add(choice.Value);
-                        //TODO this needs some more work to show the title but return the value
+                        dropdownItems.Add(choice);
 
                         // If multiple values are specified, no option is selected
                         if (chosen.Contains(choice.Value) && chosen.Count == 1)
                         {
-                            uiComboBox.SelectedItem = choice.Value;
+                            uiComboBox.SelectedItem = choice;
                         }
                     }
                     else
@@ -88,6 +90,8 @@ namespace AdaptiveCards.Rendering.MAUI
                     }
                 }
             }
+
+            uiComboBox.ItemsSource = dropdownItems;
 
             AdaptiveChoiceSetInputValue inputValue = null;
             

@@ -90,19 +90,25 @@ namespace AdaptiveCards.Rendering.MAUI
             uiTextBlock.LineBreakMode = LineBreakMode.NoWrap;
 
             //TODO FONT uiTextBlock.FontFamily = new FontFamily(RendererUtil.GetFontFamilyFromList(context.Config.GetFontFamily(textBlock.FontType)));
-            //TODO FW uiTextBlock.FontWeight = FontWeight.FromOpenTypeWeight(context.Config.GetFontWeight(textBlock.FontType, textBlock.Weight));
+            //uiTextBlock.FontWeight = FontWeight.FromOpenTypeWeight(context.Config.GetFontWeight(textBlock.FontType, textBlock.Weight));
+            //TODO bold covered below, still need lighter, but maybe that's ok - we use bold all over the place but lighter only in styledemo
             uiTextBlock.FontSize = context.Config.GetFontSize(textBlock.FontType, textBlock.Size);
 
             uiTextBlock.LineBreakMode = LineBreakMode.TailTruncation;
 
+            if (textBlock.Weight == AdaptiveTextWeight.Bolder)
+            {
+                uiTextBlock.FontAttributes |= FontAttributes.Bold;
+            }
+
             if (textBlock.Italic)
             {
-                uiTextBlock.FontAttributes = FontAttributes.Italic;
+                uiTextBlock.FontAttributes |= FontAttributes.Italic;
             }
 
             if (textBlock.Strikethrough)
             {
-                uiTextBlock.TextDecorations = TextDecorations.Strikethrough;
+                uiTextBlock.TextDecorations |= TextDecorations.Strikethrough;
             }
 
             if (textBlock.HorizontalAlignment == AdaptiveHorizontalAlignment.Right)

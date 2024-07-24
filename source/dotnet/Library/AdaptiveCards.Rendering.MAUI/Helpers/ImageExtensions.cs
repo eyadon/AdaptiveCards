@@ -70,6 +70,15 @@ namespace AdaptiveCards.Rendering.MAUI.Helpers
             //image.SetBinding(Image.StretchProperty, binding);
         }
 
+        public static async void SetSource(this Button button, AdaptiveAction adaptiveAction,
+            AdaptiveRenderContext context)
+        {
+            Uri finalUri = context.Config.ResolveFinalAbsoluteUri(adaptiveAction.IconUrl);
+
+            button.ImageSource = await context.ResolveImageSource(finalUri);
+
+        }
+
         //public class StretchConverter : IValueConverter
         //{
         //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

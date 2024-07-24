@@ -350,12 +350,11 @@ namespace AdaptiveCards.Rendering.MAUI
 
                 if (input.Style == AdaptiveChoiceInputStyle.Compact)
                 {
-                    //TODO this needs some work to return value, not title
-                    var item = uiComboBox.SelectedItem as string;
+                    var item = uiComboBox.SelectedItem as AdaptiveChoice;
                     if (item != null)
                     {
                         //AdaptiveChoice adaptiveChoice = item.BindingContext as AdaptiveChoice;
-                        return item; //adaptiveChoice.Value;
+                        return item.Value;
                     }
                     return "";
                 }
