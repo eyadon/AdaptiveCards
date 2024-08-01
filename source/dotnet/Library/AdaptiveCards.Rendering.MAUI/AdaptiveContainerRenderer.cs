@@ -37,7 +37,7 @@ namespace AdaptiveCards.Rendering.MAUI
             Grid uiOuterContainer = new Grid();
 
             uiOuterContainer.Children.Add(uiContainer);
-            Border border = new Border();
+            ContentView border = new ContentView();
             border.Content = uiOuterContainer;
 
             RendererUtil.ApplyVerticalContentAlignment(uiContainer, container);
@@ -321,7 +321,7 @@ namespace AdaptiveCards.Rendering.MAUI
         }
 
         // For applying bleeding, we must know if the element has padding, so both properties are applied in the same method
-        public static bool ApplyPadding(Border border, Grid uiElement, AdaptiveCollectionElement element, AdaptiveRenderArgs parentRenderArgs, AdaptiveRenderContext context)
+        public static bool ApplyPadding(ContentView border, Grid uiElement, AdaptiveCollectionElement element, AdaptiveRenderArgs parentRenderArgs, AdaptiveRenderContext context)
         {
             bool canApplyPadding = false;
 

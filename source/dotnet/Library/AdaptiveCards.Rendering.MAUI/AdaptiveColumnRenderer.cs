@@ -34,7 +34,7 @@ namespace AdaptiveCards.Rendering.MAUI
             // This is the renderArgs that will be passed down to the children
             var childRenderArgs = new AdaptiveRenderArgs(parentRenderArgs);
 
-            Border border = new Border();
+            ContentView border = new ContentView();
             border.Content = uiContainer;
 
             bool inheritsStyleFromParent = !column.Style.HasValue;

@@ -89,7 +89,7 @@ namespace AdaptiveCards.Rendering.MAUI
 
         public override string GetValue()
         {
-            return (RenderedInputElement as Label).Text;
+            return (RenderedInputElement as Entry).Text;
         }
 
         public override void SetFocus()
