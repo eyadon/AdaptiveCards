@@ -15,14 +15,14 @@ namespace AdaptiveCards.Rendering.MAUI.Helpers
             element.BindingContext = value;
         }
 
-        public static void SetState(this CheckBox control, bool value)
+        public static void SetState(this Switch control, bool value)
         {
-            control.IsChecked = value;
+            control.IsToggled = value;
         }
 
-        public static bool? GetState(this CheckBox control)
+        public static bool? GetState(this Switch control)
         {
-            return control.IsChecked;
+            return control.IsToggled;
         }
 
         //public static void Add(this ListBox control, object element)

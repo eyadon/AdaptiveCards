@@ -19,6 +19,8 @@ namespace AdaptiveCards.Sample.MAUIVisualizer
         {
             InitializeComponent();
 
+
+            var hostConfig = RendererHostConfigHelper.GetConfig();
             //var timer = new System.Timers.Timer(TimeSpan.FromSeconds(1));
             //timer.AutoReset = true;
             //timer.Elapsed += Timer_Tick;
@@ -26,7 +28,8 @@ namespace AdaptiveCards.Sample.MAUIVisualizer
 
             Renderer = new AdaptiveCardRenderer()
             {
-                Resources = Resources
+                Resources = Resources,
+                HostConfig = hostConfig
             };
 
         }

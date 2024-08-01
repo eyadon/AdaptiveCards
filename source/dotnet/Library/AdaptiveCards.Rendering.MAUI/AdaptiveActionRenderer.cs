@@ -25,7 +25,7 @@ namespace AdaptiveCards.Rendering.MAUI
                 //    //e.Handled = true;
                 //};
 
-                uiButton.HorizontalOptions = LayoutOptions.Center;
+                uiButton.HorizontalOptions = LayoutOptions.Fill;
                 return uiButton;
             }
             return null;

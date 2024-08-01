@@ -401,7 +401,7 @@ namespace AdaptiveCards.Rendering.MAUI
 
         public override string GetValue()
         {
-            CheckBox uiToggle = RenderedInputElement as CheckBox;
+            Switch uiToggle = RenderedInputElement as Switch;
             AdaptiveToggleInput toggleInput = InputElement as AdaptiveToggleInput;
 
             return (uiToggle.GetState() == true ? toggleInput.ValueOn ?? "true" : toggleInput.ValueOff ?? "false");

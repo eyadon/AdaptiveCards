@@ -11,13 +11,13 @@ namespace AdaptiveCards.Rendering.MAUI
         {
             var container = new HorizontalStackLayout();
             var label = new Label();
-            var uiToggle = new CheckBox();
+            var uiToggle = new Switch();
             container.Children.Add(uiToggle);
             container.Children.Add(label);
             AdaptiveChoiceSetRenderer.SetContent(label, input.Title, input.Wrap);
-            uiToggle.Color =
+            uiToggle.ThumbColor =
                 context.GetColorBrush(context.Config.ContainerStyles.Default.ForegroundColors.Default.Default).Color;
-            uiToggle.SetState(input.Value == (input.ValueOn ?? "true"));
+            uiToggle.IsToggled = input.Value == (input.ValueOn ?? "true");
             uiToggle.Style = context.GetStyle($"Adaptive.Input.Toggle");
             uiToggle.SetContext(input);
 
