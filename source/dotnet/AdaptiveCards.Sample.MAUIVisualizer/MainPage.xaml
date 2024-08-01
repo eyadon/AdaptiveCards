@@ -22,7 +22,18 @@
             <Color x:Key="Adaptive.Action.Destructive.Button.Static.Background">#FFDDDDDD</Color>
             <Color x:Key="Adaptive.Action.Destructive.Button.Static.Border">#FF707070</Color> 
             <Color x:Key="Adaptive.Action.Destructive.Button.Foreground">#FF838383</Color> 
-            <Color x:Key="Adaptive.Action.Destructive.Button.MouseOver.Foreground">#FF838383</Color> 
+            <Color x:Key="Adaptive.Action.Destructive.Button.MouseOver.Foreground">#FF838383</Color>
+
+            <Style x:Key="Adaptive.Input.AdaptiveChoiceSetInput.ComboBox" TargetType="{x:Type Picker}">
+                <Setter Property="BackgroundColor" Value="DarkGray"></Setter>
+                <Setter Property="TextColor" Value="Black"></Setter>
+                <Setter Property="TitleColor" Value="Gray"></Setter>
+            </Style>
+
+            <Style x:Key="Adaptive.Input.Text" TargetType="{x:Type Entry}">
+                <Setter Property="Background" Value="#FFFFFFFF"/>
+                <Setter Property="TextColor" Value="Black"/>
+            </Style>
 
             <Style x:Key="Adaptive.Input.Text.InlineAction.Button" TargetType="{x:Type Button}">
                 <Setter Property="Background" Value="#FFFFFFFF"/>

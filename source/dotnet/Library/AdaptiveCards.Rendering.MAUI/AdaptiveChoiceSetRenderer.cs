@@ -62,11 +62,7 @@ namespace AdaptiveCards.Rendering.MAUI
                         
                         dropdownItems.Add(choice);
 
-                        // If multiple values are specified, no option is selected
-                        if (chosen.Contains(choice.Value) && chosen.Count == 1)
-                        {
-                            uiComboBox.SelectedItem = choice;
-                        }
+
                     }
                     else
                     {
@@ -92,6 +88,11 @@ namespace AdaptiveCards.Rendering.MAUI
             }
 
             uiComboBox.ItemsSource = dropdownItems;
+            // If multiple values are specified, no option is selected
+            if (chosen.Count == 1)
+            {
+                uiComboBox.SelectedItem = dropdownItems.First(i => i.Value == chosen.First());
+            }
 
             AdaptiveChoiceSetInputValue inputValue = null;
             
