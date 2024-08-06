@@ -74,7 +74,7 @@ namespace AdaptiveCards.Rendering.MAUI.Helpers
             AdaptiveRenderContext context)
         {
             Uri finalUri = context.Config.ResolveFinalAbsoluteUri(adaptiveAction.IconUrl);
-
+            if (finalUri == null) return;
             button.ImageSource = await context.ResolveImageSource(finalUri);
 
         }

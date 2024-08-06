@@ -449,6 +449,7 @@ namespace AdaptiveCards.Rendering.MAUI
                     Border visualCue = new Border();
                     visualCue.Content = renderedElement;
                     visualCue.Stroke = context.GetColorBrush(context.GetForegroundColors(AdaptiveTextColor.Attention).Default);
+                    visualCue.StrokeThickness = 0;
 
                     inputValue.VisualErrorCue = visualCue;
                     enclosingElement = visualCue;
