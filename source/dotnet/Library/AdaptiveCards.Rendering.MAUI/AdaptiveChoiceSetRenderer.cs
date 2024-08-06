@@ -40,6 +40,7 @@ namespace AdaptiveCards.Rendering.MAUI
                     uiCheckbox.IsChecked = chosen.Contains(choice.Value);
                     uiCheckbox.BindingContext = choice;
                     uiCheckbox.Style = context.GetStyle("Adaptive.Input.AdaptiveChoiceSetInput.CheckBox");
+                    label.Style = context.GetStyle("Adaptive.Input.AdaptiveChoiceSetInput.Label");
                     uiChoices.Children.Add(container);
                 }
                 else
@@ -82,6 +83,7 @@ namespace AdaptiveCards.Rendering.MAUI
                         uiRadio.GroupName = input.Id;
                         uiRadio.BindingContext = choice;
                         uiRadio.Style = context.GetStyle("Adaptive.Input.AdaptiveChoiceSetInput.Radio");
+                        label.Style = context.GetStyle("Adaptive.Input.AdaptiveChoiceSetInput.Label");
                         uiChoices.Children.Add(container);
                     }
                 }
