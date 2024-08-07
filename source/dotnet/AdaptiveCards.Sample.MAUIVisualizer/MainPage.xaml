@@ -45,6 +45,14 @@
                 <Setter Property="TextColor" Value="Black"/>
             </Style>
 
+
+            <!-- This named style doesn't seem to be working - maybe it has to have all the visual state manager stuff?
+                the style in Styles.xaml does seem to be applied.
+            <Style x:Key="Adaptive.Input.Toggle" TargetType="{x:Type Switch}">
+                <Setter Property="ThumbColor" Value="Green"></Setter>
+                <Setter Property="OnColor" Value="Blue"></Setter>
+            </Style>-->
+
             <Style x:Key="Adaptive.Input.AdaptiveChoiceSetInput.Radio" TargetType="{x:Type RadioButton}">
                 <Setter Property="VerticalOptions" Value="Center"></Setter>
             </Style>

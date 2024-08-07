@@ -19,6 +19,8 @@ namespace AdaptiveCards.Sample.MAUIVisualizer
         {
             InitializeComponent();
 
+            Application.Current.UserAppTheme = AppTheme.Light;
+
 
             var hostConfig = RendererHostConfigHelper.GetConfig();
             //var timer = new System.Timers.Timer(TimeSpan.FromSeconds(1));
