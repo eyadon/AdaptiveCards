@@ -12,11 +12,11 @@ namespace AdaptiveCards.Rendering.MAUI
             if (context.Config.SupportsInteractivity && context.ActionHandlers.IsSupported(action.GetType()))
             {
                 var uiButton = CreateActionButton(action, context);
-                var tap = new TapGestureRecognizer();
-                tap.Command = new Command(() =>
+                //var tap = new TapGestureRecognizer();
+                uiButton.Command = new Command(() =>
                     context.InvokeAction(uiButton, new AdaptiveActionEventArgs(action)));
 
-                uiButton.GestureRecognizers.Add(tap);
+                //uiButton.GestureRecognizers.Add(tap);
                 //uiButton.Clicked += (sender, e) =>
                 //{
                 //    context.InvokeAction(uiButton, new AdaptiveActionEventArgs(action));

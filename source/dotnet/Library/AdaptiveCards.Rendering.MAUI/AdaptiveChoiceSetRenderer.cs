@@ -68,11 +68,12 @@ namespace AdaptiveCards.Rendering.MAUI
                     else
                     {
                         var container = new HorizontalStackLayout();
-                        var label = new Label();
+                        //var label = new Label();
                         var uiRadio = new RadioButton();
                         container.Children.Add(uiRadio);
-                        container.Children.Add(label);
-                        SetContent(label, choice.Title, input.Wrap);
+                        uiRadio.Content = choice.Title;
+                        //container.Children.Add(label);
+                        //SetContent(label, choice.Title, input.Wrap);
 
                         // When isMultiSelect is false, only 1 specified value is accepted.
                         // Otherwise, don't set any option
@@ -83,7 +84,7 @@ namespace AdaptiveCards.Rendering.MAUI
                         uiRadio.GroupName = input.Id;
                         uiRadio.BindingContext = choice;
                         uiRadio.Style = context.GetStyle("Adaptive.Input.AdaptiveChoiceSetInput.Radio");
-                        label.Style = context.GetStyle("Adaptive.Input.AdaptiveChoiceSetInput.Label");
+                        //label.Style = context.GetStyle("Adaptive.Input.AdaptiveChoiceSetInput.Label");
                         uiChoices.Children.Add(container);
                     }
                 }

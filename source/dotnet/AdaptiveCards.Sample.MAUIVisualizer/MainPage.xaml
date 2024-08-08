@@ -53,16 +53,12 @@
                 <Setter Property="OnColor" Value="Blue"></Setter>
             </Style>-->
 
-            <Style x:Key="Adaptive.Input.AdaptiveChoiceSetInput.Radio" TargetType="{x:Type RadioButton}">
-                <Setter Property="VerticalOptions" Value="Center"></Setter>
-            </Style>
-
             <Style x:Key="Adaptive.Input.AdaptiveChoiceSetInput.Label" TargetType="{x:Type Label}">
                 <Setter Property="BackgroundColor" Value="Transparent"/>
                 <Setter Property="TextColor" Value="Black"/>
                 <Setter Property="VerticalOptions" Value="Center"></Setter>
                 <Setter Property="VerticalTextAlignment" Value="Center"></Setter>
-                <!-- if everything is centered, why do they not line up... -->
+                 <!--if everything is centered, why do they not line up...--> 
                 <Setter Property="Margin" Value="0,0,0,8"></Setter>
             </Style>
 

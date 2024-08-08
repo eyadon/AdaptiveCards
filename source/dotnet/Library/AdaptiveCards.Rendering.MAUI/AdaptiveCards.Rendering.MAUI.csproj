@@ -18,7 +18,7 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageId>ASE.AdaptiveCards.Rendering.MAUI</PackageId>
-		<Version>9.0.9</Version>
+		<Version>9.0.10</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
