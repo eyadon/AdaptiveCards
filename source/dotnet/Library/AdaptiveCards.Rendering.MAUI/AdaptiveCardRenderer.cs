@@ -279,11 +279,11 @@ namespace AdaptiveCards.Rendering.MAUI
         //}
 
 
-        public async Task<IDictionary<Uri, Stream>> LoadAssetsForCardAsync(AdaptiveCard card, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            var visitor = new PreFetchImageVisitor(ResourceResolvers);
-            await visitor.GetAllImages(card).WithCancellation(cancellationToken).ConfigureAwait(false);
-            return visitor.LoadedImages;
-        }
+        //public async Task<IDictionary<Uri, Stream>> LoadAssetsForCardAsync(AdaptiveCard card, CancellationToken cancellationToken = default(CancellationToken))
+        //{
+        //    var visitor = new PreFetchImageVisitor(ResourceResolvers);
+        //    await visitor.GetAllImages(card).WithCancellation(cancellationToken).ConfigureAwait(false);
+        //    return visitor.LoadedImages;
+        //}
     }
 }

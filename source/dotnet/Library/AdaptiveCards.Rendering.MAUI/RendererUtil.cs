@@ -12,27 +12,29 @@ namespace AdaptiveCards.Rendering.MAUI
         /// </summary>
         /// <param name="fontList">Font list to check if any exist</param>
         /// <returns>First font in list that is installed, otherwise, default system font</returns>
-        //TODO FONT public static string GetFontFamilyFromList(string fontList)
-        //{
-        //    var installedFonts = new InstalledFontCollection();
-        //    string[] fontFamilies = fontList.Split(',');
+        public static string GetFontFamilyFromList(string fontList)
+        {
+            //i have no idea how to tell what's installed so let's just use the first
+            //var installedFonts = new InstalledFontCollection();
+            string[] fontFamilies = fontList.Split(',');
 
-        //    for (int i = 0; i < fontFamilies.Length; ++i)
-        //    {
-        //        string fontFamily = fontFamilies[i].Trim('\'');
+            for (int i = 0; i < fontFamilies.Length; ++i)
+            {
+                string fontFamily = fontFamilies[i].Trim('\'');
 
-        //        foreach (var installedFontFamily in installedFonts.Families)
-        //        {
-        //            if (installedFontFamily.Name == fontFamily)
-        //            {
-        //                return fontFamily;
-        //            }
-        //        }
-        //    }
+                //foreach (var installedFontFamily in installedFonts.Families)
+                {
+                    //if (installedFontFamily.Name == fontFamily)
+                    {
+                        return fontFamily;
+                    }
+                }
+            }
 
-        //    // If no valid font was found in list, return the system default font
-        //    return SystemFonts.MessageFontFamily.ToString();
-        //}
+            // If no valid font was found in list, return the system default font
+            //return SystemFonts.MessageFontFamily.ToString();
+            return "";
+        }
 
         public static void ApplyVerticalContentAlignment(View uiElement, AdaptiveCollectionElement element)
         {

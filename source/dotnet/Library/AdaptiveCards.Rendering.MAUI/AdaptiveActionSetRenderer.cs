@@ -109,7 +109,7 @@ namespace AdaptiveCards.Rendering.MAUI
                     }
 
                     // add actions
-                    var uiAction = context.Render(rendereableAction) as Button;
+                    var uiAction = context.Render(rendereableAction) as Frame;
 
                     if (uiAction == null)
                     {

@@ -68,7 +68,7 @@ namespace AdaptiveCards.Rendering.MAUI
 
                 return Task.FromResult(memoryStream as Stream);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return Task.FromResult<Stream>(null);
             }

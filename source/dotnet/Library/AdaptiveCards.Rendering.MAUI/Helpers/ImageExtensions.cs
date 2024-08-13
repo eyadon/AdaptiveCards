@@ -76,7 +76,7 @@ namespace AdaptiveCards.Rendering.MAUI.Helpers
             Uri finalUri = context.Config.ResolveFinalAbsoluteUri(adaptiveAction.IconUrl);
             if (finalUri == null) return;
             button.ImageSource = await context.ResolveImageSource(finalUri);
-
+            
         }
 
         //public class StretchConverter : IValueConverter

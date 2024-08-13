@@ -12,11 +12,12 @@ namespace AdaptiveCards.Rendering.MAUI
             if (context.Config.SupportsInteractivity && context.ActionHandlers.IsSupported(action.GetType()))
             {
                 var uiButton = CreateActionButton(action, context);
-                //var tap = new TapGestureRecognizer();
-                uiButton.Command = new Command(() =>
+                var tap = new TapGestureRecognizer();
+                //uiButton.Command = new Command(() =>
+                tap.Command = new Command(() =>
                     context.InvokeAction(uiButton, new AdaptiveActionEventArgs(action)));
 
-                //uiButton.GestureRecognizers.Add(tap);
+                uiButton.GestureRecognizers.Add(tap);
                 //uiButton.Clicked += (sender, e) =>
                 //{
                 //    context.InvokeAction(uiButton, new AdaptiveActionEventArgs(action));
@@ -31,9 +32,9 @@ namespace AdaptiveCards.Rendering.MAUI
             return null;
         }
 
-        public static Button CreateActionButton(AdaptiveAction action, AdaptiveRenderContext context)
+        public static Frame CreateActionButton(AdaptiveAction action, AdaptiveRenderContext context)
         {
-            var uiButton = new Button
+            var uiButton = new Frame()
             {
                 Style = context.GetStyle($"Adaptive.{action.Type}"),
             };
@@ -54,7 +55,8 @@ namespace AdaptiveCards.Rendering.MAUI
                 uiButton.Style = style;
             }
 
-            //var contentStackPanel = new StackLayout();
+            var contentStackPanel = new StackLayout();
+            contentStackPanel.HorizontalOptions = LayoutOptions.Center;
             
             if (!context.IsRenderingSelectAction)
             {
@@ -67,70 +69,73 @@ namespace AdaptiveCards.Rendering.MAUI
                 uiButton.Padding = new Thickness(0, 0, 0, 0);
                 //contentStackPanel.Margin = new Thickness(0, 0, 0, 0);
             }
-            //uiButton.Content = contentStackPanel;
-            //View uiIcon;
+            uiButton.Content = contentStackPanel;
+            View uiIcon;
 
-            uiButton.Text = action.Title;
-            uiButton.FontSize = context.Config.GetFontSize(AdaptiveFontType.Default, AdaptiveTextSize.Default);
-            
-            //var uiTitle = new Label
-            //{
-            //    Text = action.Title,
-            //    FontSize = context.Config.GetFontSize(AdaptiveFontType.Default, AdaptiveTextSize.Default),
-            //    VerticalOptions = LayoutOptions.Center,
-            //    Style = context.GetStyle($"Adaptive.Action.Title")
-            //};
-            //contentStackPanel.BackgroundColor = Colors.Transparent;
-            
+            //uiButton.Text = action.Title;
+            //uiButton.FontSize = context.Config.GetFontSize(AdaptiveFontType.Default, AdaptiveTextSize.Default);
+
+            var uiTitle = new Label
+            {
+                Text = action.Title,
+                FontSize = context.Config.GetFontSize(AdaptiveFontType.Default, AdaptiveTextSize.Default),
+                VerticalOptions = LayoutOptions.Center,
+                Style = context.GetStyle($"Adaptive.Action.Title")
+            };
+            contentStackPanel.BackgroundColor = Colors.Transparent;
+
             if (action.IconUrl != null)
             {
-                uiButton.SetSource(action, context);
+                //uiButton.SetSource(action, context);
 
                 var actionsConfig = context.Config.Actions;
 
-                //var image = new AdaptiveImage(action.IconUrl)
-                //{
-                //    HorizontalAlignment = AdaptiveHorizontalAlignment.Center
-                //};
-                //uiIcon = AdaptiveImageRenderer.Render(image, context);
+                var image = new AdaptiveImage(action.IconUrl)
+                {
+                    HorizontalAlignment = AdaptiveHorizontalAlignment.Center
+                };
+                uiIcon = AdaptiveImageRenderer.Render(image, context);
 
                 if (actionsConfig.IconPlacement == IconPlacement.AboveTitle)
                 {
-                    uiButton.ContentLayout =
-                        new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Top, context.Config.GetSpacing(AdaptiveSpacing.Default));
-                    //contentStackPanel.Orientation = StackOrientation.Vertical;
-                    //uiIcon.HeightRequest = (double)actionsConfig.IconSize;
+                    //uiButton.ContentLayout =
+                    //    new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Top, context.Config.GetSpacing(AdaptiveSpacing.Default));
+                    contentStackPanel.Orientation = StackOrientation.Vertical;
+                    uiIcon.HeightRequest = (double)actionsConfig.IconSize;
                 }
                 else
                 {
-                    //contentStackPanel.Orientation = StackOrientation.Horizontal;
+                    //uiButton.MaximumHeightRequest = (double)actionsConfig.IconSize;
+                    contentStackPanel.Orientation = StackOrientation.Horizontal;
                     //Size the image to the textblock, wait until layout is complete (loaded event)
                     //uiIcon.Loaded += (sender, e) =>
                     //{
                     //    uiIcon.HeightRequest = Math.Min(uiTitle.Height, (double)actionsConfig.IconSize);
                     //};
+                    //this is too soon let's just request it
+                    uiIcon.HeightRequest = actionsConfig.IconSize;
                 }
-                //contentStackPanel.Children.Add(uiIcon);
+                contentStackPanel.Children.Add(uiIcon);
 
                 // Add spacing for the icon for horizontal actions
                 if (actionsConfig.IconPlacement == IconPlacement.LeftOfTitle)
                 {
                     int spacing = context.Config.GetSpacing(AdaptiveSpacing.Default);
-                    uiButton.ContentLayout =
-                        new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, spacing);
-                    //var uiSep = new Grid
-                    //{
-                    //    Style = context.GetStyle($"Adaptive.VerticalSeparator"),
-                    //    VerticalOptions = LayoutOptions.Fill,
-                    //    WidthRequest = spacing,
-                    //};
-                    //contentStackPanel.Children.Add(uiSep);
+                    //uiButton.ContentLayout =
+                    //    new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, spacing);
+                    var uiSep = new Grid
+                    {
+                        Style = context.GetStyle($"Adaptive.VerticalSeparator"),
+                        VerticalOptions = LayoutOptions.Fill,
+                        WidthRequest = spacing,
+                    };
+                    contentStackPanel.Children.Add(uiSep);
                 }
             }
 
             if (!context.IsRenderingSelectAction)
             {
-                //contentStackPanel.Children.Add(uiTitle);
+                contentStackPanel.Children.Add(uiTitle);
             }
             else if (!string.IsNullOrEmpty(action.Title))
             {
