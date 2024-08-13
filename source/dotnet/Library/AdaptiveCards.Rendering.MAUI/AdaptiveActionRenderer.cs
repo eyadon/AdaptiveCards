@@ -112,7 +112,7 @@ namespace AdaptiveCards.Rendering.MAUI
                     //{
                     //    uiIcon.HeightRequest = Math.Min(uiTitle.Height, (double)actionsConfig.IconSize);
                     //};
-                    //this is too soon let's just request it
+                    //above doesn't work, you just get -1. 
                     uiIcon.HeightRequest = actionsConfig.IconSize;
                 }
                 contentStackPanel.Children.Add(uiIcon);
