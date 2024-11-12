@@ -26,7 +26,7 @@ namespace AdaptiveCards.Rendering.MAUI
 
         public override string Br()
         {
-            return "<LineBreak/>\n";
+            return "<Span Text=\"\n\" />";
         }
 
         public override string Code(string code, string lang, bool escaped)
@@ -37,22 +37,22 @@ namespace AdaptiveCards.Rendering.MAUI
 
         public override string Codespan(string text)
         {
-            return $"<Run FontFamily=\"Consolas\">{text}</Run>\n";
+            return $"<Span FontFamily=\"Consolas\" Text=\"{text}\" />";
         }
 
         public override string Del(string text)
         {
-            return $"<Run TextDecorations=\"Strikethrough\">{text}</Run>";
+            return $"<Span TextDecorations=\"Strikethrough\">{text}</Span>";
         }
 
         public override string Em(string text)
         {
-            return $"<Italic>{text}</Italic>";
+            return $"<Span FontAttributes=\"Italic\">{text}</Span>";
         }
 
         public override string Heading(string text, int level, string raw)
         {
-            return $"{text}<LineBreak/>";
+            return $"<Span Text=\"{text}\n\" />";
         }
 
         public override string Hr()
@@ -75,7 +75,8 @@ namespace AdaptiveCards.Rendering.MAUI
 
         public override string Link(string href, string title, string text)
         {
-            return $"<Hyperlink Command=\"NavigationCommands.GoToPage\" CommandParameter=\"{href}\">{text}</Hyperlink>";
+            return string.Empty;
+            //return $"<Hyperlink Command=\"NavigationCommands.GoToPage\" CommandParameter=\"{href}\">{text}</Hyperlink>";
         }
 
         public override string List(string body, bool ordered, int start)
@@ -105,12 +106,12 @@ namespace AdaptiveCards.Rendering.MAUI
 
         public override string Paragraph(string text)
         {
-            return $"{text}<LineBreak/>";
+            return $"<Span Text=\"{text}\n\"></Span>";
         }
 
         public override string Strong(string text)
         {
-            return $"<Bold>{text}</Bold>";
+            return $"<Span FontAttributes=\"Bold\">{text}</Span>";
         }
 
         public override string Table(string header, string body)

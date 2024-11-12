@@ -188,7 +188,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="100"/>
             </Grid.ColumnDefinitions>
-            <Editor x:Name="textBox" HorizontalOptions="Fill" VerticalOptions="Fill"></Editor>
+            <Editor x:Name="textBox" HorizontalOptions="Fill" VerticalOptions="Fill" TextColor="Black"></Editor>
             <Button Grid.Column="1" x:Name="ReloadButton" Text="↺" TextColor="White" FontSize="40" Clicked="ReloadButton_OnClicked"></Button>
         </Grid>
         <ScrollView Grid.Row="1">

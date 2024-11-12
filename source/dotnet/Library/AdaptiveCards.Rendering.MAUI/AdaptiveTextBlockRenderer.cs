@@ -79,12 +79,12 @@ namespace AdaptiveCards.Rendering.MAUI
 
             string text = RendererUtilities.ApplyTextFunctions(textBlock.Text, context.Lang);
 
-            text = marked.Parse(text);
+            //text = marked.Parse(text);
             text = RendererUtilities.HandleHtmlSpaces(text);
             
-            string xaml = $"<Label>{text}</Label>";
+            //string xaml = $"<Label><Label.FormattedText><FormattedString>{text}</FormattedString></Label.FormattedText></Label>";
 
-            var uiTextBlock = new Label().LoadFromXaml(xaml);
+            var uiTextBlock = new Label() { Text = text };
             uiTextBlock.Style = context.GetStyle($"Adaptive.{textBlock.Type}");
 
             uiTextBlock.LineBreakMode = LineBreakMode.NoWrap;
