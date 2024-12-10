@@ -32,9 +32,9 @@ namespace AdaptiveCards.Rendering.MAUI
             return null;
         }
 
-        public static Frame CreateActionButton(AdaptiveAction action, AdaptiveRenderContext context)
+        public static Border CreateActionButton(AdaptiveAction action, AdaptiveRenderContext context)
         {
-            var uiButton = new Frame()
+            var uiButton = new Border()
             {
                 Style = context.GetStyle($"Adaptive.{action.Type}"),
             };

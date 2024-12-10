@@ -62,15 +62,20 @@
                 <Setter Property="Margin" Value="0,0,0,8"></Setter>
             </Style>
 
-            <Style x:Key="Adaptive.Action.default" TargetType="{x:Type Frame}">
+            <Style x:Key="Adaptive.Action.default" TargetType="{x:Type Border}">
                 <!--<Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>-->
                 <Setter Property="BackgroundColor" Value="{StaticResource Adaptive.Action.Default.Button.Static.Background}"/>
-                <Setter Property="BorderColor" Value="{StaticResource Adaptive.Action.Positive.Button.Static.Border}"/>
+                <Setter Property="Stroke" Value="{StaticResource Adaptive.Action.Positive.Button.Static.Border}"/>
                 <!--<Setter Property="TextColor" Value="{StaticResource Adaptive.Action.Positive.Button.Foreground}"/>-->
                 <!--<Setter Property="BorderWidth" Value="1"/>-->
                 <Setter Property="HorizontalOptions" Value="Center"/>
                 <Setter Property="VerticalOptions" Value="Center"/>
                 <Setter Property="Padding" Value="1"/>
+                <Setter Property="StrokeShape">
+                    <Setter.Value>
+                        <RoundRectangle CornerRadius="5"></RoundRectangle>
+                    </Setter.Value>
+                </Setter>
                 <!--<Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Button}">
@@ -101,10 +106,10 @@
             </Style>
 
 
-            <Style x:Key="PositiveActionDefaultStyle" TargetType="{x:Type Frame}">
+            <Style x:Key="PositiveActionDefaultStyle" TargetType="{x:Type Border}">
                 <!--<Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>-->
                 <Setter Property="BackgroundColor" Value="{StaticResource Adaptive.Action.Positive.Button.Static.Background}"/>
-                <Setter Property="BorderColor" Value="{StaticResource Adaptive.Action.Positive.Button.Static.Border}"/>
+                <Setter Property="Stroke" Value="{StaticResource Adaptive.Action.Positive.Button.Static.Border}"/>
                 <!--<Setter Property="TextColor" Value="{DynamicResource Adaptive.Action.Positive.Button.Foreground}"/>-->
                 <!--<Setter Property="BorderWidth" Value="1"/>-->
                 <Setter Property="HorizontalOptions" Value="Center"/>
@@ -139,10 +144,10 @@
                 </Setter>-->
             </Style>
 
-            <Style x:Key="DestructiveActionDefaultStyle" TargetType="{x:Type Frame}">
+            <Style x:Key="DestructiveActionDefaultStyle" TargetType="{x:Type Border}">
                 <!--<Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>-->
                 <Setter Property="Background" Value="{StaticResource Adaptive.Action.Destructive.Button.Static.Background}"/>
-                <Setter Property="BorderColor" Value="{StaticResource Adaptive.Action.Destructive.Button.Static.Border}"/>
+                <Setter Property="Stroke" Value="{StaticResource Adaptive.Action.Destructive.Button.Static.Border}"/>
                 <!--<Setter Property="TextColor" Value="{DynamicResource Adaptive.Action.Destructive.Button.Foreground}"/>-->
                 <!--<Setter Property="BorderWidth" Value="1"/>-->
                 <Setter Property="HorizontalOptions" Value="Center"/>

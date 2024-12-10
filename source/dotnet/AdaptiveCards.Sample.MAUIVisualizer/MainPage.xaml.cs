@@ -206,7 +206,7 @@ namespace AdaptiveCards.Sample.MAUIVisualizer
                 Text = "WARNING: " + message,
                 //Style = Resources["Warning"] as Style
             };
-            var button = new Frame { Content = textBlock };
+            var button = new Border { Content = textBlock };
             cardError.Children.Add(button);
         }
 
@@ -217,7 +217,7 @@ namespace AdaptiveCards.Sample.MAUIVisualizer
                 Text = err.Message + "\nSource : " + err.Source,
                 //Style = Resources["Error"] as Style
             };
-            var button = new Frame { Content = textBlock };
+            var button = new Border { Content = textBlock };
             //button.GestureRecognizers.Add(new TapGestureRecognizer(){Command = new Command(Button_Click)});
             cardError.Children.Add(button);
 
